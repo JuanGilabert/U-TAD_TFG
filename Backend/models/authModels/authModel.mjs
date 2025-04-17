@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { hash, genSalt, compare } from 'bcrypt';
 // Modulos locales
 import { jwtGenerator } from '../../services/jwt/generator/jwtGenerator.mjs';
-import { connectDB } from '../../services/database/connection/mongoDbConection.js';
+import { connectDB, closeDbConnection } from '../../services/database/connection/mongoDbConection.js';
 import { ReturnDocument } from 'mongodb';
 // Constantes a nivel de modulo.
 const userCollectionName = process.env.USER_COLLECTION_NAME;
 const hashRounds = parseInt(process.env.HASH_SALT_ROUNDS);
 const returnDocumentValue = ReturnDocument.AFTER;
-//// 
+////
 export class AuthModel {
     // Funcion asincrona para crear un nuevo usuario
     static async postNewUser({ input }) {
@@ -17,7 +17,7 @@ export class AuthModel {
         // Obtenemos los datos.
         const { userName, userPassword, userEmail } = input;
         // Comprobamos que no exista el email para poder registrar al usuario. Si existe, devolvemos un error.
-        if (await AuthModel.checkIfUserEmailExists(userEmail, "postNewUser")) return { message: "Existing email." };
+        if (await AuthModel.checkIfUserEmailExists(userEmail)) return { message: "Existing email." };
         try {
             // Rezlizamos el hash de la contraseña recibida con el salt correspondiente.
             const hashedPassword = await hash(userPassword, await genSalt(hashRounds));
@@ -37,7 +37,7 @@ export class AuthModel {
         // Obtenemos los datos.
         const { userEmail, userPassword } = input;
         let token = "";
-        const user = await AuthModel.checkIfUserEmailExists(userEmail, "postLoginUser");
+        const user = await AuthModel.checkIfUserEmailExists(userEmail, { returnUser: true });
         try {
             if (!user || !(await compare(userPassword, user.userPassword)))
                 return { message: "Invalid input." };
@@ -59,11 +59,12 @@ export class AuthModel {
     // Funcion asincrona para cerrar la sesion de un usuario. SE SUPONE QUE SOLO SE RECIBE UN TOKEN PARA ACTUALIZAR AL USUARIO LOGUEADO.
     static async postLogoutUser(userId) {
         const db = await connectDB();
-        const { ok, value } = await db.findOneAndUpdate(
-            { userId: userId }, { userJWT: "" }, { returnDocument: returnDocumentValue }
-        );
-        // Devolvemos la respuesta obtenida.
+        const { ok, value } = await db.collection(userCollectionName).findOneAndUpdate({ userId: userId }, { userJWT: "" });
+        // Devolvemos el error obtenido al intentar cerrar la sesion.
         if (!ok) return false;
+        // Cerramos la conexion con la base de datos.
+        await closeDbConnection();
+        // Devolvemos la respuesta obtenida.
         return value;
     }
     //
@@ -77,11 +78,10 @@ export class AuthModel {
     /* Funcion asincrona para comprobar si un email ya existe o no en la base de datos.
     En funcion del metodo que llame a esta funcion devolvera un valor u otro. En el metodo postNewUser devolvera true o false.
     En el metodo postLoginUser devolvera el usuario encontrado en base al email o false en caso de no encontrar a ningun usuario. */
-    static async checkIfUserEmailExists (userEmail, nameMethodCall ){
+    static async checkIfUserEmailExists (userEmail, { returnUser = false } = {} ){
         const db = await connectDB();
         const user = await db.collection(userCollectionName).findOne({ userEmail });
-        // devolvemos true o false en funcion del metodo que llame a esta funcion.
-        if (nameMethodCall === "postNewUser") return user !== null;
-        if (nameMethodCall === "postLoginUser") return user !== null ? user : false;
+        // devolvemos true o false en funcion del metodo que llame a checkIfUserEmailExists.
+        return returnUser ? user || false : user !== null;
     }
 }

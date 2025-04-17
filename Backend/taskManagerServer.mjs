@@ -1,9 +1,9 @@
 import express from "express";
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-// Importamos los middlewares
+// Importamos los middlewares necesarios.
 import { corsMiddleware } from "./middlewares/corsMiddleware.mjs";
-// Importamos las rutas
+// Importamos las rutas para usarlas y redirigir las peticiones.
 import { artRouter } from "./routes/art/artRoute.mjs"
 import { authRouter } from "./routes/auth/authRoutes.mjs"
 import { foodRouter } from "./routes/food/foodRoute.mjs"
@@ -29,12 +29,14 @@ dotenv.config();
 const app = express();
 // Middleware para procesar los cuerpos en formato JSON
 app.use(express.json());
-// middleware para procesar los datos de formulario.
+// Middleware para procesar los datos de formulario.
 app.use(express.urlencoded());
 // Middleware para procesar las cookies.
 app.use(cookieParser());
 // Middleware para habilitar CORS.
 app.use(corsMiddleware());
+// Establecemos como origen ...
+// app.use(corsMiddleware({ acceptedOrigins: ['http://localhost:8080'] }));
 // Deshabilitamos la cabecera que indica que se usa Express y su version.
 app.disable('x-powered-by');
 // Habilitamos el modo estricto de rutas ya que por defecto esta deshabilitado. app.enable('strict routing');
