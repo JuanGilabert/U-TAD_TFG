@@ -2,7 +2,7 @@ import { Router } from 'express';
 // Importamos el middleware de autenticacion y los controladores
 import { authMiddleware } from '../../middlewares/auth/authMiddleware.mjs';
 import { HealthMedicamentController } from '../../controllers/health/healthMedicamentController.mjs';
-import { HealthMedicalAppointmentController } from '../../controllers/health/healtMedicalAppointmentController.mjs';
+import { HealthMedicalAppointmentController } from '../../controllers/health/healthMedicalAppointmentController.mjs';
 ////
 export const healthRouter = ({ medicamentModel, medicalAppointmentModel }) => {
     const healthRouter = Router();

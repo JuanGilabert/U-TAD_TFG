@@ -1,6 +1,5 @@
 import express from "express";
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
+import { commonJSModule } from "./utils/CommonJsModuleImporter.mjs";
 // Importamos los middlewares necesarios.
 import { corsMiddleware } from "./middlewares/corsMiddleware.mjs";
 // Importamos las rutas para usarlas y redirigir las peticiones.
@@ -24,15 +23,14 @@ import { MeetingModel } from './models/meetingModels/meetingModel.mjs';
 import { SportModel } from './models/sportModels/sportModel.mjs';
 import { TravelModel } from './models/travelModels/travelModel.mjs';
 import { WorkModel } from './models/workModels/workModel.mjs';
-//// Habilitamos dotenv para cargar las variables de entorno e nicializamos App Express
-dotenv.config();
-const app = express();
+//// Inicializamos App Express
+export const app = express();
 // Middleware para procesar los cuerpos en formato JSON
 app.use(express.json());
 // Middleware para procesar los datos de formulario.
 app.use(express.urlencoded());
 // Middleware para procesar las cookies.
-app.use(cookieParser());
+app.use(commonJSModule('cookie-parser')());
 // Middleware para habilitar CORS.
 app.use(corsMiddleware());
 // Establecemos como origen ...

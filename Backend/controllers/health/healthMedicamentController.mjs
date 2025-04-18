@@ -1,5 +1,5 @@
 // Importamos los modelos/schemas
-import { validateNewMedicament, validatePartialNewMedicament } from '../../models/healthModels/model/modelValidator.mjs';
+import { validateNewMedicament, validatePartialNewMedicament } from '../../models/healthModels/medicamentModel/medicamentModelValidator.mjs';
 import { randomUUIDv4Regex } from '../../utils/export/GenericRegex.mjs';
 import { findUserIdByEmailFunction } from '../../utils/functions/findUserIdByEmailFunction.mjs';
 // Creamos mensajes genericos.
@@ -15,8 +15,8 @@ export class HealthMedicamentController {
         this.getAllMedicaments = this.getAllMedicaments.bind(this);
         this.getMedicamentById = this.getMedicamentById.bind(this);
         this.postNewMedicament = this.postNewMedicament.bind(this);
-        this.putMedicament = this.putMedicament.bind(this);
-        this.patchMedicament = this.patchMedicament.bind(this);
+        this.putUpdateMedicament = this.putUpdateMedicament.bind(this);
+        this.patchUpdateMedicament = this.patchUpdateMedicament.bind(this);
         this.deleteMedicament = this.deleteMedicament.bind(this);
     }
     //

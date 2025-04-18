@@ -1,5 +1,5 @@
 // Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateNewMusic, validatePartialNewMusic } from '../../models/artModels/model/modelValidator.mjs';
+import { validateNewMusic, validatePartialNewMusic } from '../../models/artModels/musicModel/musicModelValidator.mjs';
 import { randomUUIDv4Regex } from '../../utils/export/GenericRegex.mjs';
 import { findUserIdByEmailFunction } from '../../utils/functions/findUserIdByEmailFunction.mjs';
 // Creamos mensajes genericos.
@@ -24,6 +24,7 @@ export class MusicController {
         this.putUpdateMusic = this.putUpdateMusic.bind(this);
         this.patchUpdateMusic = this.patchUpdateMusic.bind(this);
         this.deleteMusic = this.deleteMusic.bind(this);
+        //this.getVideoDownloadByUrl = this.getVideoDownloadByUrl.bind(this);
     }
     //
     getAllMusics = async (req, res) => {
@@ -120,4 +121,17 @@ export class MusicController {
         // Enviamos la respuesta obtenida.
         res.status(404).send({ message: error404Message });
     }
+    /*
+    getVideoDownloadByUrl = async (req, res) => {
+        if (Object.keys(req.query).length > 0) return res.status(400).json({ error: errorQueryMessage });
+        if (Object.keys(req.body).length > 0) return res.status(400).send({ message: error400Message });
+        // Validaciones de los parametros recibidos. Verificamos que solo haya 1 parametro en la peticion.
+        const { url } = req.params;
+        if (!url || Object.keys(req.params).length > 1)
+            return res.status(400).send({ message: error400Message });
+        const modelGetVideoDownloadByUrlResponse = await this.model.getVideoDownloadByUrl(url);
+        if (modelGetVideoDownloadByUrlResponse) return res.status(200).sendFile(modelGetVideoDownloadByUrlResponse);
+        // Enviamos el error.        
+        res.status(404).send({ message: error404Message });
+    }*/
 }

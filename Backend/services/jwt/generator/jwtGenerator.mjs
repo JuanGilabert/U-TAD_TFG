@@ -1,5 +1,9 @@
 // Modulos
-import { jwt } from "jsonwebtoken";
+//import { jwt } from "jsonwebtoken";
+import { promisify } from 'util';
+//
+import pkg from 'jsonwebtoken';
+const { sign } = pkg;
 //
 const jwtSecretProcessEnv = process.env.JWT_SECRET_KEY || '';
 /**
@@ -9,5 +13,5 @@ const jwtSecretProcessEnv = process.env.JWT_SECRET_KEY || '';
  * @returns {string} The generated JWT, which expires in 1 hour.
  */
 export const jwtGenerator = ({ userEmail }) => {
-    return jwt.sign({ userEmail: userEmail }, jwtSecretProcessEnv, { expiresIn: '1h' });
+    return sign({ userEmail: userEmail }, jwtSecretProcessEnv, { expiresIn: '1h' });
 }

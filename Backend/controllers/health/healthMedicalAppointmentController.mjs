@@ -1,5 +1,5 @@
 // Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateNewMedicalAppointment, validatePartialNewMedicalAppointment } from '../../models/healthModels/model/modelValidator.mjs';
+import { validateNewMedicalAppointment, validatePartialNewMedicalAppointment } from '../../models/healthModels/medicalAppointmentModel/medicalAppointmentModelValidator.mjs';
 import { randomUUIDv4Regex } from '../../utils/export/GenericRegex.mjs';
 import { findUserIdByEmailFunction } from '../../utils/functions/findUserIdByEmailFunction.mjs';
 // Creamos mensajes genericos.

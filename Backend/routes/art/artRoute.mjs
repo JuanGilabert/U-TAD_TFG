@@ -38,7 +38,7 @@ export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
     // DELETE
     artRoute.delete(`${musicEndpoint}${identifier}`, [authMiddleware], artMusicController.deleteMusic);
     // api/art/music/video_downloader/:url En la query se enviara el directorio de descarga del video hasta revision del modelo.
-    artRoute.get(`${musicEndpoint}/video_downloader/:url`, [authMiddleware], artMusicController.getVideoDownloadByUrl);
+    //artRoute.get(`${musicEndpoint}/video_downloader/:url`, [authMiddleware], artMusicController.getVideoDownloadByUrl);
     /* Painting */
     const paintingEndpoint = '/painting';
     const artPaintingController = new PaintingController({ PaintingModel });

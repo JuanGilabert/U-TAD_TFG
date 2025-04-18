@@ -1,4 +1,4 @@
-import { net } from 'node:net'
+import * as net from 'node:net';
 //
 export async function findAvailablePort(desirePort) {
     const server = net.createServer();
