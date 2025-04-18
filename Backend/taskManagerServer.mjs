@@ -28,7 +28,7 @@ export const app = express();
 // Middleware para procesar los cuerpos en formato JSON
 app.use(express.json());
 // Middleware para procesar los datos de formulario.
-app.use(express.urlencoded());
+//app.use(express.urlencoded());
 // Middleware para procesar las cookies.
 app.use(commonJSModule('cookie-parser')());
 // Middleware para habilitar CORS.

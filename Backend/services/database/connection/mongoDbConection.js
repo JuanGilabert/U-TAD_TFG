@@ -1,5 +1,11 @@
+/* Carga de dotenv por seguridad.
+import dotenv from 'dotenv';
+dotenv.config();*/
+// Modulos
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import { mongoConnectionUrl } from '../config/dbConnectionData.js';
+//
+const dbName = process.env.DB_NAME;
 // MongoDB Atlas URI
 const client = new MongoClient(mongoConnectionUrl, {
     serverApi: ServerApiVersion.v1,
@@ -22,7 +28,7 @@ let connectionPromise;
 export async function connectDB() {
     if (!connectionPromise) {
         connectionPromise = client.connect()
-            .then(() => client.db(process.env.DB_NAME))
+            .then(() => client.db(dbName))
             .catch((err) => {
                 connectionPromise = null; // reset on failure
                 console.error("Error connecting to MongoDB:", err);

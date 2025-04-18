@@ -1,5 +1,7 @@
 // Modulos de node.
 import dotenv from 'dotenv';
+//// Habilitamos dotenv para cargar las variables de entorno del archivo .env antes de realizar cualquier accion en el servidor.
+dotenv.config();
 // Modulos locales.
 import { app } from "./taskManagerServer.mjs";
 import { connectDB, closeDbConnection, getConnectionPromise } from './services/database/connection/mongoDbConection.js';
@@ -9,8 +11,6 @@ const parsedPort = parseInt(process.env.SERVER_BIND_PORT, 10);
 // Verificamos que el puerto sea valido.
 const isValidPort = !isNaN(parsedPort) && parsedPort > 0 && parsedPort < 65536;
 const safePort = isValidPort ? parsedPort : 2002;
-//// Habilitamos dotenv para cargar las variables de entorno.
-dotenv.config();
 // Conexión a MongoDB openwebinars
 connectDB().then(() => findAvailablePort(safePort))
 .then(port => {

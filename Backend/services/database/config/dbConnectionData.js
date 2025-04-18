@@ -1,3 +1,6 @@
+// Carga de dotenv por seguridad.
+import dotenv from 'dotenv';
+dotenv.config();
 // MongoDB Atlas URI. En caso de no recibir los valores se mostraran mensajes indicando que hay problemas con .env
 //const dbUser = process.env.DB_USER || 'error process.env.DB_USER';
 //const dbPwd = process.env.DB_PWD || 'error process.env.DB_PWD';
