@@ -5,19 +5,7 @@ import { requestMiddleware } from '../../middlewares/requestMiddleware.mjs';
 import { CinemaController } from '../../controllers/art/artCinemaController.mjs';
 import { MusicController } from '../../controllers/art/artMusicController.mjs';
 import { PaintingController } from '../../controllers/art/artPaintingController.mjs';
-/**
- * Configures and returns an Express router for handling art-related routes.
- *
- * This router provides endpoints for managing cinema, music, and painting
- * resources. Each resource type supports the following operations:
- *
- * - GET: Retrieve a list of resources or a single resource by ID.
- * - POST: Create a new resource.
- * - PUT: Update an existing resource by ID.
- * - PATCH: Partially update an existing resource by ID.
- * - DELETE: Remove an existing resource by ID.
- *
- * All routes require the `requestMiddleware` for handling requests.
+/** Configures and returns an Express router for handling art-related routes.s
  *
  * @param {Object} params - The parameters for configuring the router.
  * @param {Object} params.CinemaModel - The model for cinema resources.
@@ -27,12 +15,16 @@ import { PaintingController } from '../../controllers/art/artPaintingController.
  */
 export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
     const artRoute = Router();
+    // Common constants
     const identifier = "/:id";
+    const unavailableDates = "/unavailable-dates";
     /* Cinema */
-    const cinemaEndpoint = '/cinema';
+    const cinemaEndpoint = "/cinema";
     const artCinemaController = new CinemaController({ model: CinemaModel });
     // GET api/art/cinema
     artRoute.get(`${cinemaEndpoint}`, [requestMiddleware], artCinemaController.getAllCinemas);
+    // GET-UNAVAILABLE-DATES api/art/cinema/unavailable-dates
+    artRoute.get(`${cinemaEndpoint}${unavailableDates}`, [requestMiddleware], artCinemaController.getCinemaUnavailableDates);
     // GET-ID api/art/cinema/:id
     artRoute.get(`${cinemaEndpoint}${identifier}`, [requestMiddleware], artCinemaController.getCinemaById);
     // POST
@@ -48,6 +40,8 @@ export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
     const artMusicController = new MusicController({ model: MusicModel });
     // GET api/art/music
     artRoute.get(`${musicEndpoint}`, [requestMiddleware], artMusicController.getAllMusics);
+    // GET-UNAVAILABLE-DATES api/art/music/unavailable-dates
+    artRoute.get(`${musicEndpoint}${unavailableDates}`, [requestMiddleware], artMusicController.getMusicUnavailableDates);
     // GET-ID api/art/music/:id
     artRoute.get(`${musicEndpoint}${identifier}`, [requestMiddleware], artMusicController.getMusicById);
     // POST
@@ -65,6 +59,8 @@ export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
     const artPaintingController = new PaintingController({ model: PaintingModel });
     // GET
     artRoute.get(`${paintingEndpoint}`, [requestMiddleware], artPaintingController.getAllPaintings);
+    // GET-UNAVAILABLE-DATES api/art/painting/unavailable-dates
+    artRoute.get(`${paintingEndpoint}${unavailableDates}`, [requestMiddleware], artPaintingController.getPaintingUnavailableDates);
     // GET-ID
     artRoute.get(`${paintingEndpoint}${identifier}`, [requestMiddleware], artPaintingController.getPaintingById);
     // POST
@@ -75,6 +71,6 @@ export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
     artRoute.patch(`${paintingEndpoint}${identifier}`, [requestMiddleware], artPaintingController.patchUpdatePainting);
     // DELETE
     artRoute.delete(`${paintingEndpoint}${identifier}`, [requestMiddleware], artPaintingController.deletePainting);
-    //
+    // Devolvemos la configuración del router.
     return artRoute;
 }

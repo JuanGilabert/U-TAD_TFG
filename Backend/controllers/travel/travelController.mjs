@@ -9,6 +9,7 @@ export class TravelController {
         this.model = model
         this.getAllTravels = this.getAllTravels.bind(this);
         this.getTravelById = this.getTravelById.bind(this);
+        this.getTravelUnavailableDates = this.getTravelUnavailableDates.bind(this);
         this.postNewTravel = this.postNewTravel.bind(this);
         this.putUpdateTravel = this.putUpdateTravel.bind(this);
         this.patchUpdateTravel = this.patchUpdateTravel.bind(this);
@@ -35,6 +36,20 @@ export class TravelController {
         if (getTravelByIdModelResponse) return res.status(200).json(getTravelByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getTravelUnavailableDates = async (req, res) => {
+        const { fechaSalidaViaje = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getTravelUnavailableDatesModelResponse = await this.model.getTravelUnavailableDates(userId, fechaSalidaViaje);
+        // Enviamos los errores.
+        if (getTravelUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getTravelUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getTravelUnavailableDatesModelResponse);
     }
     postNewTravel = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

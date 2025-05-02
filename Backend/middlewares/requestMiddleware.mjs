@@ -19,23 +19,44 @@ export async function requestMiddleware(req, res, next) {
   // Verificamos que el contenido aceptado sea json.
   const acceptHeader = req.get('Accept');
   if (!acceptHeader || !req.accepts('json')) return res.status(406).send({ message: NOT_ACCEPTABLE_406_MESSAGE });
+  //// Si no hay cabecera indicamos que no tienes autorizacion.
+  const authorizationHeader = req.header('Authorization');
+  if (!authorizationHeader) return res.status(401).json({ message: "No tienes cabecera de autorizacion." });
+  // Si el token no es correcto indicamos que no tienes autorizacion.
+  const [scheme, token] = authorizationHeader.split(' ');
+  if (scheme !== 'Bearer' || !token || !tokenRegex.test(token))
+    return res.status(401).json({ message: "No hay token o esta mal formado o el formato es incorrecto(Bearer token)." });  
+  // Nos conectamos a la base de datos para comprobar que el token recibido en la request se encuentra en la base de datos.
+  const db = await connectDB();
+  const validationTokenResponse = await db.collection(AUTH_COLLECTION_NAME).findOne({ userJWT: token });
+  // Si el token recibido se encuentra en nuestra base de datos quiere decir que ese token pertenece a un usuario activo.
+  if (validationTokenResponse) {
+    // Verificamos el token para obtener el playload. Recibimos el email o null si el token es incorrecto.
+    const jwtValidation = jwtValidator(token);
+    if (jwtValidation === null) return res.status(401).json({ message: UNAUTHORIZED_401_MESSAGE });
+    // Guardamos del playload recibido(jwtValidation) el valor del email obtenido de la funcion.
+    req.user = { userEmail: jwtValidation };
+  } else {
+    // Si el token no se encunetra quiere decir que es incorrecto o que no esta logueado y devolvemos el error correspondiente.
+    return res.status(401).json({ message: UNAUTHORIZED_401_MESSAGE });
+  }
   //// Verificamos el tipo de metodo que hace la request para validar los valores de la peticion como los params, query o body.
   if (req.method === 'GET') {
     // Si hay body devolvemos el error correspondiente.
-    if (req.body) return res.status(400).json({ message: BAD_REQUEST_400_MESSAGE });
+    if (req.body) return res.status(400).json({ message: `${BAD_REQUEST_400_MESSAGE} No se admite un body.` });
     // Si la ruta tiene params, verificamos que no existan queries en la peticion para comprobar la ruta /api/endpoint/:id en este caso.
     if (Object.keys(req.params).length > 0) {
       if (Object.keys(req.query).length > 0) return res.status(400).send({ message: BAD_REQUEST_400_QUERY_MESSAGE });
       // Validaciones de los parametros recibidos.
       if (!checkParamsFunction(req.params.id)) return res.status(400).send({ message: BAD_REQUEST_400_MESSAGE });
     }
-    // Si no hay body y tampoco hay params accedemos a /api/endpoint
+    // Si no hay body y tampoco hay params entonces accedemos a /api/endpoint donde si puede haber queries en la peticion al ser un get a la barra /.
   }
   if (req.method === 'POST') {
+    // Verificamos que exista el body de la request.
+    if (!req.body) return res.status(400).send({ message: BAD_REQUEST_400_MESSAGE });
     // Verificamos que no haya queries en la peticion.
     if (Object.keys(req.query).length > 0) return res.status(400).send({ message: BAD_REQUEST_400_QUERY_MESSAGE });
-    // Verificamos que no existan parametros en la peticion y que exista body.
-    if (!req.body || Object.keys(req.params).length > 0) return res.status(400).send({ message: BAD_REQUEST_400_MESSAGE });
   }
   if (req.method === 'PUT' || req.method === 'PATCH') {
     // Verificamos que no haya queries en la peticion.
@@ -54,29 +75,9 @@ export async function requestMiddleware(req, res, next) {
     if (!checkParamsFunction(req.params.id)) return res.status(400).send({ message: BAD_REQUEST_400_MESSAGE });
   }
   //if (req.method === 'OPTIONS' || req.method === 'HEAD') return next();
-  //// Si no hay cabecera indicamos que no tienes autorizacion.
-  const authorizationHeader = req.header('Authorization');
-  if (!authorizationHeader) return res.status(401).json({ message: "No tienes cabecera de autorizacion." });
-  // Si el token no es correcto indicamos que no tienes autorizacion.
-  const [scheme, token] = authorizationHeader.split(' ');
-  if (scheme !== 'Bearer' || !token || !tokenRegex.test(token))
-    return res.status(401).json({ message: "No hay token o esta mal formado o el formato es incorrecto(Bearer token)." });  
-  //// Nos conectamos a la base de datos para comprobar que el token recibido en la request se encuentra en la base de datos.
-  const db = await connectDB();
-  const validationTokenResponse = await db.collection(AUTH_COLLECTION_NAME).findOne({ userJWT: token });
-  // Si el token recibido se encuentra en nuestra base de datos quiere decir que ese token pertenece a un usuario activo.
-  if (validationTokenResponse) {
-    // Verificamos el token para obtener el playload. Recibimos el email o null si el token es incorrecto.
-    const jwtValidation = jwtValidator(token);
-    if (jwtValidation === null) return res.status(401).json({ message: UNAUTHORIZED_401_MESSAGE });
-    // Guardamos del playload recibido(jwtValidation) el valor del email obtenido de la funcion.
-    req.user = { userEmail: jwtValidation };
-    // Enviamos la informacion la siguiente funcion que se ejecutara en la cola(next()) como un objeto(req.user).
-    next();
-    return;
-  }
-  // Si el token no se encunetra quiere decir que es incorrecto y devolvemos el error correspondiente.
-  return res.status(401).json({ message: UNAUTHORIZED_401_MESSAGE });
+  // Enviamos la informacion la siguiente funcion que se ejecutara en la cola(next()) como un objeto(req.user).
+  next();
+  return;
 }
 function checkParamsFunction(id) {
   // Validamos que el id sea valido, es decir que el id sea un string randomUUID de version 4.

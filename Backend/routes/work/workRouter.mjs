@@ -9,8 +9,11 @@ export const workRouter = ({ WorkModel }) => {
     /* Work */
     const ednpointName = "/";
     const identifier = "/:id";
+    const unavailableDates = "/unavailable-dates";
     // GET api/work/
     workRouter.get(`${ednpointName}`, [requestMiddleware], workController.getAllWorks);
+    // GET-UNAVAILABLE-DATES --> /api/work/unavailable-dates
+    workRouter.get(`${unavailableDates}`, [requestMiddleware], workController.getWorkUnavailableDates);
     // GET-ID api/work/:id
     workRouter.get(`${identifier}`, [requestMiddleware], workController.getWorkById);
     // POST api/work/

@@ -16,6 +16,33 @@ export class MedicamentModel {
         const db = await connectDB();
         return db.collection(MEDICAMENT_COLLECTION_NAME).findOne({ userId: userId, _id: id }, { projection: { userId: 0 } });
     }
+    static async getMedicamentAvailableDates(userId, fechaCaducidadMedicamento) {
+        const db = await connectDB();
+        // Si hay query params devolvemos las fechas de las reservas que coinciden con la fecha de la pelicula.
+        const startDate = new Date(fechaCaducidadMedicamento);
+        const endDate = new Date(startDate);
+        endDate.setUTCDate(endDate.getUTCDate() + 1); // suma 1 día
+        // Devolvemos una lista de fechas ¿¿??.
+        const availableDatesOnDay = await db.collection(MEDICAMENT_COLLECTION_NAME).find(
+            {
+                userId: userId,
+                fechaCaducidadMedicamento: {
+                    $gte: startDate,
+                    $lt: endDate
+                }
+            },
+            {
+                projection: {
+                    _id: 0,
+                    fechaCaducidadMedicamento: 1 // REVISAR.
+                }
+            }
+        ).toArray();
+        // Devolvemos el error si no hay fechas de citas para la fecha indicada.
+        if (!availableDatesOnDay.length) return false;
+        // Si hay fechas devolvemos la lista de fechas.
+        return availableDatesOnDay.map(r => r.fechaCaducidadMedicamento);
+    }
     static async postNewMedicament({ medicament, userId }) {
         const db = await connectDB();
         const newMedicament = {

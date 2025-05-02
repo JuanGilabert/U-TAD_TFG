@@ -1,7 +1,6 @@
 // Importamos las librerias.
 import { z } from 'zod';
-// Regex para validar el email.
-const validEmailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+import { validEmailRegex } from '../../utils/export/GenericRegex.mjs';
 // Definir el esquema.
 const userSchema = z.object({
     userName: z.string({

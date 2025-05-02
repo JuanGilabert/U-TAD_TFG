@@ -8,6 +8,7 @@ export class HealthMedicamentController {
     constructor({ model }) { this.model = model;
         this.getAllMedicaments = this.getAllMedicaments.bind(this);
         this.getMedicamentById = this.getMedicamentById.bind(this);
+        this.getMedicamentAvailableDates = this.getMedicamentAvailableDates.bind(this);
         this.postNewMedicament = this.postNewMedicament.bind(this);
         this.putUpdateMedicament = this.putUpdateMedicament.bind(this);
         this.patchUpdateMedicament = this.patchUpdateMedicament.bind(this);
@@ -34,6 +35,18 @@ export class HealthMedicamentController {
         if (medicamentByNationalCodeResponse) return res.status(200).json(medicamentByNationalCodeResponse);
         // Enviamos el mensaje de error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getMedicamentAvailableDates = async (req, res) => {
+        const { fechaCaducidadMedicamento = "hasNoValue" } = req.params;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getMedicamentAvailableDatesModelResponse = await this.model.getMedicamentAvailableDates(userId, fechaCaducidadMedicamento);
+        // Enviamos el error.
+        if (getMedicamentAvailableDatesModelResponse === false)
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        return res.status(200).json(getMedicamentAvailableDatesModelResponse);
     }
     postNewMedicament = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

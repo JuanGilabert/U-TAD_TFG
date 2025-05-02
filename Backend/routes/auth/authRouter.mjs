@@ -25,6 +25,6 @@ export const authRouter = ({ AuthModel }) => {
     authRouter.post('/signout', [requestMiddleware], authController.postLogoutUser);
     // GET. Obtencion de un usuario. --> api/auth/profile
     authRouter.get('/profile', [requestMiddleware], authController.getUserProfileData);
-    // Devolvemos el Router.
+    // Devolvemos la configuracion del router.
     return authRouter;
 }

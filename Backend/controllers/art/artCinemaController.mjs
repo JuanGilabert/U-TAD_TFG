@@ -9,6 +9,7 @@ export class CinemaController {
         this.model = model;
         this.getAllCinemas = this.getAllCinemas.bind(this);
         this.getCinemaById = this.getCinemaById.bind(this);
+        this.getCinemaUnavailableDates = this.getCinemaUnavailableDates.bind(this);
         this.postNewCinema = this.postNewCinema.bind(this);
         this.putUpdateCinema = this.putUpdateCinema.bind(this);
         this.patchUpdateCinema = this.patchUpdateCinema.bind(this);
@@ -21,8 +22,8 @@ export class CinemaController {
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getAllCinemasModelResponse = await this.model.getAllCinemas(userId);
         // Enviamos el error.
-        if (getAllCinemasModelResponse === false) return res.status(404).send({ message: "No existen citas medicas." });
-        // Enviamos la respuesta obtenida
+        if (getAllCinemasModelResponse === false) return res.status(404).send({ message: "No existen citas." });
+        // Enviamos la respuesta obtenida.
         res.status(200).json(getAllCinemasModelResponse);
     }
     getCinemaById = async (req, res) => {
@@ -34,6 +35,20 @@ export class CinemaController {
         if (getCinemaByIdModelResponse) return res.status(200).json(getCinemaByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getCinemaUnavailableDates = async (req, res) => {
+        const { fechaInicioPelicula = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getCinemaUnavailableDatesModelResponse = await this.model.getCinemaUnavailableDates(userId, fechaInicioPelicula);
+        // Enviamos los errores.
+        if (getCinemaUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getCinemaUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        return res.status(200).json(getCinemaUnavailableDatesModelResponse);
     }
     postNewCinema = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

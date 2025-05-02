@@ -9,6 +9,7 @@ export class MusicController {
         this.model = model;
         this.getAllMusics = this.getAllMusics.bind(this);
         this.getMusicById = this.getMusicById.bind(this);
+        this.getMusicUnavailableDates = this.getMusicUnavailableDates.bind(this);
         this.postNewMusic = this.postNewMusic.bind(this);
         this.putUpdateMusic = this.putUpdateMusic.bind(this);
         this.patchUpdateMusic = this.patchUpdateMusic.bind(this);
@@ -22,8 +23,8 @@ export class MusicController {
         // Obtenemos del modelo los datos requeridos.
         const getAllMusicsModelResponse = await this.model.getAllMusics(userId);
         // Enviamos el error.
-        if (getAllMusicsModelResponse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
-        // Enviamos la respuesta.
+        if (getAllMusicsModelResponse === false) return res.status(404).send({ message: "No existe ningun evento." });
+        // Enviamos la respuesta obtenida
         res.status(200).json(getAllMusicsModelResponse);
     }
     getMusicById = async (req, res) => {
@@ -33,8 +34,22 @@ export class MusicController {
         // Obtenemos del modelo los datos requeridos
         const getMusicByIdModelResponse = await this.model.getMusicById(id, userId);
         if (getMusicByIdModelResponse) return res.status(200).json(getMusicByIdModelResponse);
-        //
+        // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getMusicUnavailableDates = async (req, res) => {
+        const { fechaInicioEvento = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getMusicUnavailableDatesModelResponse = await this.model.getMusicUnavailableDates(userId, fechaInicioEvento);
+        // Enviamos los errores.
+        if (getMusicUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getMusicUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getMusicUnavailableDatesModelResponse);
     }
     postNewMusic = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

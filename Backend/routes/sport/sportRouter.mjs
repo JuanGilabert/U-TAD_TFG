@@ -26,8 +26,11 @@ export const sportRouter = ({ SportModel }) => {
     /* Sport */
     const ednpointName = "/";
     const identifier = "/:id";
+    const unavailableDates = "/unavailable-dates";
     // GET api/sport/
     sportRouter.get(`${ednpointName}`, [requestMiddleware], sportController.getAllSports);
+    // GET-UNAVAILABLE-DATES --> /api/sport/unavailable-dates
+    sportRouter.get(`${unavailableDates}`, [requestMiddleware], sportController.getSportUnavailableDates);
     // GET-ID api/sport/:id
     sportRouter.get(`${identifier}`, [requestMiddleware], sportController.getSportById);
     // POST 
@@ -38,6 +41,6 @@ export const sportRouter = ({ SportModel }) => {
     sportRouter.patch(`${identifier}`, [requestMiddleware], sportController.patchUpdateSport);
     // DELETE
     sportRouter.delete(`${identifier}`, [requestMiddleware], sportController.deleteSport);
-    //
+    // DEvolvemos la configuración del router.
     return sportRouter;
 }

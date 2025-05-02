@@ -9,6 +9,7 @@ export class HealthMedicalAppointmentController {
         this.model = model;
         this.getAllMedicalAppointments = this.getAllMedicalAppointments.bind(this);
         this.getMedicalAppointmentById = this.getMedicalAppointmentById.bind(this);
+        this.getMedicalAppointmentUnavailableDates = this.getMedicalAppointmentUnavailableDates.bind(this);
         this.postNewMedicalAppointment = this.postNewMedicalAppointment.bind(this);
         this.putUpdateMedicalAppointment = this.putUpdateMedicalAppointment.bind(this);
         this.patchUpdateMedicalAppointment = this.patchUpdateMedicalAppointment.bind(this);
@@ -21,7 +22,7 @@ export class HealthMedicalAppointmentController {
         // Obtenemos del modelo los datos requeridos.
         const apiGetAllMedicalAppointmentsResponse = await this.model.getAllMedicalAppointments(userId);
         // Enviamos el error.
-        if (apiGetAllMedicalAppointmentsResponse === false) return res.status(404).send({ message: "No existen citas medicas." });
+        if (apiGetAllMedicalAppointmentsResponse === false) return res.status(404).send({ message: "No existe ninguna cita medica." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(apiGetAllMedicalAppointmentsResponse);
     }
@@ -34,6 +35,20 @@ export class HealthMedicalAppointmentController {
         if (apiGetMedicalAppointmentByIdResponse) return res.status(200).json(apiGetMedicalAppointmentByIdResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getMedicalAppointmentUnavailableDates = async (req, res) => {
+        const { fechaCitaMedica = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getMedicalAppointmentUnavailableDatesModelResponse = await this.model.getMedicalAppointmentUnavailableDates(userId, fechaCitaMedica);
+        // Enviamos los errores.
+        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        return res.status(200).json(getMedicalAppointmentUnavailableDatesModelResponse);
     }
     postNewMedicalAppointment = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error

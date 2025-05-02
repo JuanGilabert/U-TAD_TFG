@@ -9,6 +9,7 @@ export class PaintingController {
         this.model = model;
         this.getAllPaintings = this.getAllPaintings.bind(this);
         this.getPaintingById = this.getPaintingById.bind(this);
+        this.getPaintingUnavailableDates = this.getPaintingUnavailableDates.bind(this);
         this.postNewPainting = this.postNewPainting.bind(this);
         this.putUpdatePainting = this.putUpdatePainting.bind(this);
         this.patchUpdatePainting = this.patchUpdatePainting.bind(this);
@@ -34,6 +35,20 @@ export class PaintingController {
         if (getPaintingByIdModelResponse) return res.status(200).json(getPaintingByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getPaintingUnavailableDates = async (req, res) => {
+        const { fechaInicioExposicionArte = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getPaintingUnavailableDatesModelResponse = await this.model.getPaintingUnavailableDates(userId, fechaInicioExposicionArte);
+        // Enviamos los errores.
+        if (getPaintingUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getPaintingUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getPaintingUnavailableDatesModelResponse);
     }
     postNewPainting = async (req, res) => {
         // Validamos que el cuerpo de la peticion sea valido.

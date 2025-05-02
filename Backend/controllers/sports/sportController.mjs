@@ -9,6 +9,7 @@ export class SportController {
         this.model = model
         this.getAllSports = this.getAllSports.bind(this);
         this.getSportById = this.getSportById.bind(this);
+        this.getSportUnavailableDates = this.getSportUnavailableDates.bind(this);
         this.postNewSport = this.postNewSport.bind(this);
         this.putUpdateSport = this.putUpdateSport.bind(this);
         this.patchUpdateSport = this.patchUpdateSport.bind(this);
@@ -35,6 +36,20 @@ export class SportController {
         if (getSportByIdModelResponse) return res.status(200).json(getSportByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getSportUnavailableDates = async (req, res) => {
+        const { fechaInicioActividad = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getSportUnavailableDatesModelResponse = await this.model.getSportUnavailableDates(userId, fechaInicioActividad);
+        // Enviamos los errores.
+        if (getSportUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getSportUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getSportUnavailableDatesModelResponse);
     }
     postNewSport = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

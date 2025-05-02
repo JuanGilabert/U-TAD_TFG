@@ -23,8 +23,11 @@ export const travelRouter = ({ TravelModel }) => {
     /* Travel */
     const ednpointName = "/";
     const identifier = "/:id";
+    const unavailableDates = "/unavailable-dates";
     // GET api/travel/
     travelRouter.get(`${ednpointName}`, [requestMiddleware], travelController.getAllTravels);
+    // GET-UNAVAILABLE-DATES --> /api/travel/unavailable-dates
+    travelRouter.get(`${unavailableDates}`, [requestMiddleware], travelController.getTravelUnavailableDates);
     // GET-ID api/travel/:id
     travelRouter.get(`${identifier}`, [requestMiddleware], travelController.getTravelById);
     // POST api/travel/
@@ -35,6 +38,6 @@ export const travelRouter = ({ TravelModel }) => {
     travelRouter.patch(`${identifier}`, [requestMiddleware], travelController.patchUpdateTravel);
     // DELETE
     travelRouter.delete(`${identifier}`, [requestMiddleware], travelController.deleteTravel);
-    //
+    // DEvolvemos la configuración del router.
     return travelRouter;
 }

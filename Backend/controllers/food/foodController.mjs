@@ -9,6 +9,7 @@ export class FoodController {
         this.model = model;
         this.getAllFoods = this.getAllFoods.bind(this);
         this.getFoodById = this.getFoodById.bind(this);
+        this.getFoodUnavailableDates = this.getFoodUnavailableDates.bind(this);
         this.postNewFood = this.postNewFood.bind(this);
         this.putUpdateFood = this.putUpdateFood.bind(this);
         this.patchUpdateFood = this.patchUpdateFood.bind(this);
@@ -34,6 +35,20 @@ export class FoodController {
         if (getFoodByIdModelResponse) return res.status(200).json(getFoodByIdModelResponse);
         // Enviamos el mensaje de error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getFoodUnavailableDates = async (req, res) => {
+        const { fechaReserva = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getFoodUnavailableDatesModelResponse = await this.model.getFoodUnavailableDates(userId, fechaReserva);
+        // Enviamos los errores.
+        if (getFoodUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getFoodUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getFoodUnavailableDatesModelResponse);
     }
     postNewFood = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

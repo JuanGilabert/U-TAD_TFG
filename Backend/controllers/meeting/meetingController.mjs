@@ -9,6 +9,7 @@ export class MeetingController {
         this.model = model
         this.getAllMeetings = this.getAllMeetings.bind(this);
         this.getMeetingById = this.getMeetingById.bind(this);
+        this.getMeetingUnavailableDates = this.getMeetingUnavailableDates.bind(this);
         this.postNewMeeting = this.postNewMeeting.bind(this);
         this.putUpdateMeeting = this.putUpdateMeeting.bind(this);
         this.patchUpdateMeeting = this.patchUpdateMeeting.bind(this);
@@ -35,6 +36,20 @@ export class MeetingController {
         if (getMeetingByIdModelResponse) return res.status(200).json(getMeetingByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getMeetingUnavailableDates = async (req, res) => {
+        const { fechaInicioReunion = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getMeetingUnavailableDatesModelResponse = await this.model.getMeetingUnavailableDates(userId, fechaInicioReunion);
+        // Enviamos los errores.
+        if (getMeetingUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getMeetingUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getMeetingUnavailableDatesModelResponse);
     }
     postNewMeeting = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

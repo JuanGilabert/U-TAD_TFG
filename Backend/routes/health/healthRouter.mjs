@@ -21,11 +21,14 @@ import { HealthMedicalAppointmentController } from '../../controllers/health/hea
 export const healthRouter = ({ MedicamentModel, MedicalAppointmentModel }) => {
     const healthRouter = Router();
     const identifier = "/:id";
+    const unavailableDates = "/unavailable-dates";
     /* Medicament */
     const medicamentEndpoint = '/medicament';
     const healthMedicamentController = new HealthMedicamentController({ model: MedicamentModel });
     // GET. api/health/medicament
     healthRouter.get(`${medicamentEndpoint}`, [requestMiddleware], healthMedicamentController.getAllMedicaments);
+    // GET-UNAVAILABLE-DATES --> /api/health/medicament/available-dates/:fechaCaducidadMedicamento
+    healthRouter.get(`${medicamentEndpoint}/available-dates/:fechaCaducidadMedicamento`, [requestMiddleware], healthMedicamentController.getMedicamentAvailableDates);
     // GET_BY_ID api/health/medicament/:id
     healthRouter.get(`${medicamentEndpoint}${identifier}`, [requestMiddleware], healthMedicamentController.getMedicamentById);
     // POST
@@ -37,10 +40,12 @@ export const healthRouter = ({ MedicamentModel, MedicalAppointmentModel }) => {
     // DELETE
     healthRouter.delete(`${medicamentEndpoint}${identifier}`, [requestMiddleware], healthMedicamentController.deleteMedicament);
     /* MedicalAppointments */
-    const medicalAppointmentEndpoint = '/medical_appointment';
+    const medicalAppointmentEndpoint = '/medical-appointment';
     const healthMedicalAppointmentController = new HealthMedicalAppointmentController({ model: MedicalAppointmentModel });
-    // GET api/health/medical_appointment
+    // GET api/health/medical-appointment
     healthRouter.get(`${medicalAppointmentEndpoint}`, [requestMiddleware], healthMedicalAppointmentController.getAllMedicalAppointments);
+    // GET-UNAVAILABLE-DATES --> /api/health/medical-appointment/unavailable-dates
+    healthRouter.get(`${medicalAppointmentEndpoint}${unavailableDates}`, [requestMiddleware],healthMedicalAppointmentController.getMedicalAppointmentUnavailableDates);
     // GET_APPOINTMENT_BY_ID api/health/medical_appointment/:id
     healthRouter.get(`${medicalAppointmentEndpoint}${identifier}`, [requestMiddleware], healthMedicalAppointmentController.getMedicalAppointmentById);
     // POST
@@ -51,6 +56,6 @@ export const healthRouter = ({ MedicamentModel, MedicalAppointmentModel }) => {
     healthRouter.patch(`${medicalAppointmentEndpoint}${identifier}`, [requestMiddleware], healthMedicalAppointmentController.patchUpdateMedicalAppointment);
     // DELETE
     healthRouter.delete(`${medicalAppointmentEndpoint}${identifier}`, [requestMiddleware], healthMedicalAppointmentController.deleteMedicalAppointment);
-    //
+    // Devolvemos la configuración del router.
     return healthRouter;
 }

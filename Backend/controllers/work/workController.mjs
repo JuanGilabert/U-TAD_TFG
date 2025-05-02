@@ -9,6 +9,7 @@ export class WorkController {
         this.model = model
         this.getAllWorks = this.getAllWorks.bind(this);
         this.getWorkById = this.getWorkById.bind(this);
+        this.getWorkUnavailableDates = this.getWorkUnavailableDates.bind(this);
         this.postNewWork = this.postNewWork.bind(this);
         this.putUpdateWork = this.putUpdateWork.bind(this);
         this.patchUpdateWork = this.patchUpdateWork.bind(this);
@@ -35,6 +36,20 @@ export class WorkController {
         if (getWorkByIdModelResponse) return res.status(200).json(getWorkByIdModelResponse);
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+    }
+    getWorkUnavailableDates = async (req, res) => {
+        const { fechaInicioTarea = "hasNoValue" } = req.query;
+        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
+        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
+        const getWorkUnavailableDatesModelResponse = await this.model.getWorkUnavailableDates(userId, fechaInicioTarea);
+        // Enviamos los errores.
+        if (getWorkUnavailableDatesModelResponse?.message === "unavailableDatesError")
+            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
+        if (getWorkUnavailableDatesModelResponse?.message === "availableDatesError")
+            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos la respuesta obtenida.
+        res.status(200).json(getWorkUnavailableDatesModelResponse);
     }
     postNewWork = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.

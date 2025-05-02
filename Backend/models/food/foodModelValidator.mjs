@@ -11,15 +11,24 @@ const foodSchema = z.object({
         invalid_type_error: "El nombre debe ser un string"
     }),
     tipoComida: z.string({
-        required_error: "El tipo es requerida",
+        required_error: "El tipo de comida es requerido",
         invalid_type_error: "El tipo debe ser un string"
     }),
     fechaReserva: z.string({
-        required_error: "La fecha de caducidad es requerida",
+        required_error: "La fecha de inicio es requerida",
         invalid_type_error: "La fecha debe ser un string en formato ISO 8601"
-    }).regex(fechaISO8601Regex, "La fecha debe estar en formato ISO 8601 (YYYY-MM-DDTHH:MM:SS.sssZ)"),
+    }).regex(fechaISO8601Regex, "La fecha debe estar en formato ISO 8601(YYYY-MM-DDTHH:MM:SS o YYYY-MM-DDTHH:MM:SS.sss+HH:MM)")
+    .transform((value) => {
+        // Convertimos el string a un objeto Date
+        const date = new Date(value);
+        // Validamos si la conversión fue exitosa (si la fecha es válida)
+        if (isNaN(date.getTime())) {
+            throw new Error("La fecha no es válida.");
+        }
+        return date;
+    }),
     asistentesReserva: z.number({
-        required_error: "La cantidad de asistentes es requerida",
+        required_error: "La cantidad de asistentes es requerido",
         invalid_type_error: "La cantidad debe ser un numero entero"
     }).int().positive(),
     notasReserva: z.string().optional()

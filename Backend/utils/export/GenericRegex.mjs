@@ -1,7 +1,8 @@
-/* Definimos la expresión regular para validar la fecha en los validadores de los modelos/schemas.
-2025-06-20T00:00:00Z  ||  2025-06-20 00:00:00Z  ||  (2025-06-20T00:00:00.123456Z  ||  2025-04-05T12:34:56+02:00  ||  2025-04-05T12:34:56-02:00)
-export const fechaISO8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/ */
-export const fechaISO8601Regex = /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|([+-])(\d{2}):(\d{2}))$/;
+/* Definimos la expresión regular para validar la fecha en los validadores de los modelos/schemas. 2025-06-20T12:00:00.000+00:00 */
+export const fechaISO8601Regex = /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(\.\d+)?([+-]\d{2}:\d{2})?$/;
+
+// Definimos el Regex para validar un email.
+export const validEmailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 /* Definimos la expresión regular siendo insensible a mayúsculas y minúsculas con el flag 'i' 
 para validar el id recibido en los controladores. El id es un randomUUID (UUID v4 segun/en base a RFC 4122).
