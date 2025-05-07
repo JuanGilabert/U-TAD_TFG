@@ -16,32 +16,37 @@ export class MedicamentModel {
         const db = await connectDB();
         return db.collection(MEDICAMENT_COLLECTION_NAME).findOne({ userId: userId, _id: id }, { projection: { userId: 0 } });
     }
-    static async getMedicamentAvailableDates(userId, fechaCaducidadMedicamento) {
+    static async getMedicamentExpirationDates(userId, fechaCaducidadMedicamento) {
         const db = await connectDB();
-        // Si hay query params devolvemos las fechas de las reservas que coinciden con la fecha de la pelicula.
-        const startDate = new Date(fechaCaducidadMedicamento);
-        const endDate = new Date(startDate);
-        endDate.setUTCDate(endDate.getUTCDate() + 1); // suma 1 día
-        // Devolvemos una lista de fechas ¿¿??.
-        const availableDatesOnDay = await db.collection(MEDICAMENT_COLLECTION_NAME).find(
-            {
-                userId: userId,
-                fechaCaducidadMedicamento: {
-                    $gte: startDate,
-                    $lt: endDate
-                }
-            },
-            {
-                projection: {
-                    _id: 0,
-                    fechaCaducidadMedicamento: 1 // REVISAR.
-                }
-            }
+        //
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());//YYYY-MM-DDT00:00:00.000Z
+        //const tomorrowMidnight = todayMidnight.setUTCDate(todayMidnight.getUTCDate() + 1);
+        const expirationDates = await db.collection(MEDICAMENT_COLLECTION_NAME).find(
+            { userId: userId, fechaCaducidadMedicamento: { $lt: todayMidnight } },
+            { projection: { userId: 0 } }
         ).toArray();
-        // Devolvemos el error si no hay fechas de citas para la fecha indicada.
-        if (!availableDatesOnDay.length) return false;
-        // Si hay fechas devolvemos la lista de fechas.
-        return availableDatesOnDay.map(r => r.fechaCaducidadMedicamento);
+        // Si no se pasa la fecha de inicio de la pelicula indica que no hay query params.
+        if (fechaCaducidadMedicamento === "hasNoValue") {
+            // Si hay fechas de caducidad, es decir si la variable expirationDates tiene valores, devolvemos las fechas.
+            if (expirationDates.length) return expirationDates;
+            return false;
+        }
+        /* Creamos un Set con las fechas en milisegundos para búsqueda rápida y efectiva.
+        const unavailableDateSet = new Set(unavailableDatesList.map(d => d.getTime())); */
+        // Creamos  fechas de inicio y fin del dia sin tener en cuneta las horas.
+        const startDate = new Date(fechaCaducidadMedicamento.split("T")[0]);
+        const endDate = new Date(startDate);
+        endDate.setUTCDate(endDate.getUTCDate() + 1);
+        // Como hay query params, devolvemos las fechas de las reservas que coinciden con la fecha de la pelicula.
+        const medicamentExpirationDates = await db.collection(MEDICAMENT_COLLECTION_NAME).find(
+            { userId: userId, fechaCaducidadMedicamento: { $gte: startDate, $lt: endDate } },
+            { projection: { userId: 0 } }
+        ).toArray();
+        // Si hay fechas de caducidad, es decir si la variable medicamentExpirationDates tiene valores, devolvemos las fechas.
+        if (medicamentExpirationDates.length) return medicamentExpirationDates;
+        // Devolvemos el error si no hay fechas de caducidad para la fecha indicada.
+        return { message: "medicamentExpirationDatesError" };
     }
     static async postNewMedicament({ medicament, userId }) {
         const db = await connectDB();

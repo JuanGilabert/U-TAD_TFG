@@ -16,58 +16,55 @@ export class MusicModel {
     }
     static async getMusicUnavailableDates(userId, fechaInicioEvento) {
         const db = await connectDB();
-        // Si no se pasa la fecha de inicio de la pelicula indica que no hay query params.
-        if (fechaInicioEvento === "hasNoValue") {
-            // Devolvemos una lista de fechas de las fechas de los documentos
-            // donde haya 3 o mas reservas en una misma fecha. Dia: (2025-06-22).
-            const unavailableDates = await db.collection(MUSIC_COLLECTION_NAME).aggregate([
-                { $match: { userId: userId } },
-                // Agrupar por solo la parte de la fecha (ignorando la hora)
-                {
-                    $group: {
-                        _id: {
-                            $dateTrunc: {
-                                date: "$fechaInicioEvento",
-                                unit: "day",
-                                timezone: "UTC"
-                            }
-                        },
-                        count: { $sum: 1 }
-                    }
-                },
-                { $match: { count: { $gte: 3 } } },
-                { $project: { _id: 0, fecha: "$_id" } }
-            ]).toArray();
-            // Si no hay fechas no disponibles, es decir si la variable unavailableDates no tiene valores, devolvemos false.
-            if (!unavailableDates.length) return { message: "unavailableDatesError" };
-            // Si hay fechas no disponibles devolvemos una lista de fechas.
-            return unavailableDates.map(r => r.fecha);
-        } else {
-            // Si hay query params devolvemos las fechas de las reservas que coinciden con la fecha de la pelicula.
-            const startDate = new Date(fechaInicioEvento);
-            const endDate = new Date(startDate);
-            endDate.setUTCDate(endDate.getUTCDate() + 1); // suma 1 día
-            // Devolvemos una lista de fechas ¿¿??.
-            const availableDatesOnDay = await db.collection(MUSIC_COLLECTION_NAME).find(
-                {
-                    userId: userId,
-                    fechaInicioEvento: {
-                        $gte: startDate,
-                        $lt: endDate
-                    }
-                },
-                {
-                    projection: {
-                        _id: 0,
-                        fechaInicioEvento: 1 // REVISAR.
-                    }
+        // Obtenemos una lista de fechas de las fechas de los documentos
+        // donde haya 3 o mas reservas en una misma fecha. Dia: (2025-06-22).
+        const unavailableDates = await db.collection(MUSIC_COLLECTION_NAME).aggregate([
+            { $match: { userId: userId } },
+            // Agrupar por solo la parte de la fecha (ignorando la hora)
+            {
+                $group: {
+                    _id: {
+                        $dateTrunc: {
+                            date: "$fechaInicioEvento",
+                            unit: "day",
+                            timezone: "UTC"
+                        }
+                    },
+                    count: { $sum: 1 }
                 }
-            ).toArray();
-            // Devolvemos el error si no hay fechas de citas para la fecha indicada.
-            if (!availableDatesOnDay.length) return { message: "availableDatesError" };
-            // Si hay fechas devolvemos la lista de fechas.
-            return availableDatesOnDay.map(r => r.fechaInicioEvento);
+            },
+            { $match: { count: { $gte: 3 } } },
+            { $project: { _id: 0, fecha: "$_id" } }
+        ]).toArray();
+        const unavailableDatesList = unavailableDates.map(d => d.fecha);
+        /* Si no se pasa la fecha de inicio de la pelicula indica que no hay query params
+        y por lo tanto si hay fechas no disponibles devolvemos una lista de fechas. */
+        if (fechaInicioEvento === "hasNoValue") {
+            // Si no hay fechas no disponibles, es decir si la variable unavailableDates no tiene valores, devolvemos el error.
+            if (unavailableDates.length) return unavailableDatesList;
+            return { message: "unavailableDatesError" };
         }
+        // Creamos un Set con las fechas no disponibles en milisegundos para búsqueda rápida y efectiva.
+        const unavailableDateSet = new Set(unavailableDatesList.map(d => d.getTime()));
+        // Creamos  fechas de inicio y fin del dia sin tener en cuneta las horas.
+        const startDate = new Date(fechaInicioEvento.split("T")[0]);
+        const endDate = new Date(startDate);
+        endDate.setUTCDate(endDate.getUTCDate() + 1);
+        // Como hay query params, devolvemos las fechas de las reservas que coinciden con la fecha de la pelicula.
+        const availableDatesOnDay = await db.collection(MUSIC_COLLECTION_NAME).find(
+            { userId: userId, fechaInicioEvento: { $gte: startDate, $lt: endDate } },
+            { projection: { _id: 0, fechaInicioEvento: 1 } }
+        ).toArray();
+        // Devolvemos el error si no hay fechas de citas para la fecha indicada.
+        if (!availableDatesOnDay.length) return { message: "availableDatesError" };
+        // Si hay reservas en la fecha indicada devolvemos la lista de reservas en la fecha indicada
+        // mapeada para devolver una lista de string.
+        const filteredDates = availableDatesOnDay.filter(d => {
+            const dateStr = d.fechaInicioEvento.toISOString().split("T")[0];
+            return !unavailableDateSet.has(new Date(dateStr).getTime());
+        });
+        if (!filteredDates.length) return { message: "filteredAvailableDatesError" };
+        return filteredDates.map(date => date.fechaInicioEvento);
     }
     static async postNewMusic({ music, userId }){
         const db = await connectDB();

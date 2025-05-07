@@ -36,17 +36,19 @@ export class HealthMedicamentController {
         // Enviamos el mensaje de error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
     }
-    getMedicamentAvailableDates = async (req, res) => {
+    getMedicamentExpirationDates = async (req, res) => {
         const { fechaCaducidadMedicamento = "hasNoValue" } = req.params;
         // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
         const userId = await findUserIdByEmailFunction(req.user.userEmail);
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
-        const getMedicamentAvailableDatesModelResponse = await this.model.getMedicamentAvailableDates(userId, fechaCaducidadMedicamento);
+        const getMedicamentsExpirationDateModelResponse = await this.model.getMedicamentExpirationDates(userId, fechaCaducidadMedicamento);
         // Enviamos el error.
-        if (getMedicamentAvailableDatesModelResponse === false)
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        if (getMedicamentsExpirationDateModelResponse === false)
+            return res.status(404).send({ message: "No existen fechas de caducidad de medicamentos." });
+        if (getMedicamentsExpirationDateModelResponse?.message === "medicamentExpirationDatesError")
+            return res.status(404).send({ message: "No existen fechas de caducidad para esta fecha." });
         // Enviamos la respuesta obtenida.
-        return res.status(200).json(getMedicamentAvailableDatesModelResponse);
+        return res.status(200).json(getMedicamentsExpirationDateModelResponse);
     }
     postNewMedicament = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
