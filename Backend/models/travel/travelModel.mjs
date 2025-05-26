@@ -14,10 +14,10 @@ export class TravelModel {
         const db = await connectDB();
         return db.collection(TRAVEL_COLLECTION_NAME).findOne({ userId: userId, _id: id }, { projection: { userId: 0 } });
     }
-    static async getTravelUnavailableDates(userId, fechaSalidaViaje) {
+    static async getTravelDates(userId, fechaSalidaViaje) {
         const db = await connectDB();
         // Obtenemos una lista de fechas de las fechas de los documentos
-        // donde haya 3 o mas reservas en una misma fecha. Dia: (2025-06-22).
+        // donde haya 3 o mas reservas en una misma fecha/dia.
         const unavailableDates = await db.collection(TRAVEL_COLLECTION_NAME).aggregate([
             { $match: { userId: userId } },
             // Agrupar por solo la parte de la fecha (ignorando la hora)
@@ -36,16 +36,13 @@ export class TravelModel {
             { $match: { count: { $gte: 1 } } },
             { $project: { _id: 0, fecha: "$_id" } }
         ]).toArray();
-        const unavailableDatesList = unavailableDates.map(d => d.fecha);
         /* Si no se pasa la fecha de inicio de la pelicula indica que no hay query params
         y por lo tanto si hay fechas no disponibles devolvemos una lista de fechas. */
         if (fechaSalidaViaje === "hasNoValue") {
             // Si no hay fechas no disponibles, es decir si la variable unavailableDates no tiene valores, devolvemos el error.
-            if (unavailableDates.length) return unavailableDatesList;
+            if (unavailableDates.length) return { dates: unavailableDates.map(date => date.fecha.toISOString()) };
             return { message: "unavailableDatesError" };
         }
-        // Creamos un Set con las fechas no disponibles en milisegundos para búsqueda rápida y efectiva.
-        const unavailableDateSet = new Set(unavailableDatesList.map(d => d.getTime()));
         // Creamos  fechas de inicio y fin del dia sin tener en cuneta las horas.
         const startDate = new Date(fechaSalidaViaje.split("T")[0]);
         const endDate = new Date(startDate);
@@ -59,12 +56,7 @@ export class TravelModel {
         if (!availableDatesOnDay.length) return { message: "availableDatesError" };
         // Si hay reservas en la fecha indicada devolvemos la lista de reservas en la fecha indicada
         // mapeada para devolver una lista de string.
-        const filteredDates = availableDatesOnDay.filter(d => {
-            const dateStr = d.fechaSalidaViaje.toISOString().split("T")[0];
-            return !unavailableDateSet.has(new Date(dateStr).getTime());
-        });
-        if (!filteredDates.length) return { message: "filteredAvailableDatesError" };
-        return filteredDates.map(date => date.fechaSalidaViaje);
+        return { dates: availableDatesOnDay.map(date => date.fechaSalidaViaje.toISOString()) };
     }
     static async postNewTravel({ travel, userId }) {
         const db = await connectDB();

@@ -25,7 +25,7 @@ const loginSchema = z.object({
         required_error: "El email es requerido",
         invalid_type_error: "El email debe ser un string"
     }).regex(validEmailRegex, "El correo debe ser valido")
-  });
+});
 const logoutSchema = z.object({
     userJWT: z.string({
         required_error: "El JWT es requerido",

@@ -8,7 +8,7 @@ export class HealthMedicamentController {
     constructor({ model }) { this.model = model;
         this.getAllMedicaments = this.getAllMedicaments.bind(this);
         this.getMedicamentById = this.getMedicamentById.bind(this);
-        this.getMedicamentAvailableDates = this.getMedicamentAvailableDates.bind(this);
+        this.getMedicamentExpirationDates = this.getMedicamentExpirationDates.bind(this);
         this.postNewMedicament = this.postNewMedicament.bind(this);
         this.putUpdateMedicament = this.putUpdateMedicament.bind(this);
         this.patchUpdateMedicament = this.patchUpdateMedicament.bind(this);
@@ -21,7 +21,7 @@ export class HealthMedicamentController {
         // // Obtenemos del modelo los datos requeridos.
         const apiGetMedicamentsResponse = await this.model.getAllMedicaments(userId);
         // Enviamos el error.
-        if (apiGetMedicamentsResponse === false) return res.status(404).send({ message: "No existen medicamentos." });
+        if (apiGetMedicamentsResponse === false) return res.status(200).send({ message: "No existen medicamentos." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(apiGetMedicamentsResponse);
     }
@@ -37,16 +37,14 @@ export class HealthMedicamentController {
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
     }
     getMedicamentExpirationDates = async (req, res) => {
-        const { fechaCaducidadMedicamento = "hasNoValue" } = req.params;
+        const { fechaCaducidadMedicamento = "hasNoValue" } = req.query;
         // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
         const userId = await findUserIdByEmailFunction(req.user.userEmail);
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getMedicamentsExpirationDateModelResponse = await this.model.getMedicamentExpirationDates(userId, fechaCaducidadMedicamento);
-        // Enviamos el error.
-        if (getMedicamentsExpirationDateModelResponse === false)
-            return res.status(404).send({ message: "No existen fechas de caducidad de medicamentos." });
-        if (getMedicamentsExpirationDateModelResponse?.message === "medicamentExpirationDatesError")
-            return res.status(404).send({ message: "No existen fechas de caducidad para esta fecha." });
+        // Enviamos los errores.
+        if (getMedicamentsExpirationDateModelResponse?.message === "medicamentExpirationDatesError") return res.status(200).send({ dates: [] });
+        if (getMedicamentsExpirationDateModelResponse?.message === "medicamentExpirationDatesByDateError") return res.status(200).send({ dates: [] });
         // Enviamos la respuesta obtenida.
         return res.status(200).json(getMedicamentsExpirationDateModelResponse);
     }

@@ -43,12 +43,10 @@ export class FoodController {
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getFoodUnavailableDatesModelResponse = await this.model.getFoodUnavailableDates(userId, fechaReserva);
         // Enviamos los errores.
-        if (getFoodUnavailableDatesModelResponse?.message === "unavailableDatesError")
-            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
-        if (getFoodUnavailableDatesModelResponse?.message === "availableDatesError")
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        if (getFoodUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
+        if (getFoodUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
         if (getFoodUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(404).send({ message: "No se pueden mostrar las reservas de esta fecha.\
+            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
             En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(getFoodUnavailableDatesModelResponse);

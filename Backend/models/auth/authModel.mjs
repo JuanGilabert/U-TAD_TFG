@@ -33,9 +33,10 @@ export class AuthModel {
         const db = await connectDB();
         let token = "";
         const user = await checkIfUserEmailExistsFunction(userEmail, { returnUser: true });
+        if (!user) return { message: "Invalid input." };
         try {
             const isPasswordValid = await compare(userPassword, user.userPassword);
-            if (!user || !isPasswordValid) return { message: "Invalid input." };
+            if (!isPasswordValid) return { message: "Invalid input." };
             // Generar JWT para el usuario.
             token = jwtGenerator({ userEmail: user.userEmail });
         } catch (error) {

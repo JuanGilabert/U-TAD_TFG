@@ -43,12 +43,10 @@ export class HealthMedicalAppointmentController {
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getMedicalAppointmentUnavailableDatesModelResponse = await this.model.getMedicalAppointmentUnavailableDates(userId, fechaCitaMedica);
         // Enviamos los errores.
-        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "unavailableDatesError")
-            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
-        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "availableDatesError")
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
+        if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
         if (getMedicalAppointmentUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(404).send({ message: "No se pueden mostrar las reservas de esta fecha.\
+            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
             En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
         // Enviamos la respuesta obtenida.
         return res.status(200).json(getMedicalAppointmentUnavailableDatesModelResponse);

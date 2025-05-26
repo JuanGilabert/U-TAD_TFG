@@ -1,7 +1,5 @@
 // Modulos
-//import { jwt } from "jsonwebtoken";
-import { promisify } from 'util';
-// Modulos
+//import { promisify } from 'util'; NOT-USED.
 import pkg from 'jsonwebtoken';
 const { sign } = pkg;
 // Modulos locales

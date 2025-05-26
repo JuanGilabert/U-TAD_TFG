@@ -27,8 +27,8 @@ export const healthRouter = ({ MedicamentModel, MedicalAppointmentModel }) => {
     const healthMedicamentController = new HealthMedicamentController({ model: MedicamentModel });
     // GET. api/health/medicament
     healthRouter.get(`${medicamentEndpoint}`, [requestMiddleware], healthMedicamentController.getAllMedicaments);
-    // GET-UNAVAILABLE-DATES --> /api/health/medicament/expiration-dates/:fechaCaducidadMedicamento
-    healthRouter.get(`${medicamentEndpoint}/expiration-dates/:fechaCaducidadMedicamento`, [requestMiddleware], healthMedicamentController.getMedicamentExpirationDates);
+    // GET-UNAVAILABLE-DATES --> /api/health/medicament/expiration-dates/
+    healthRouter.get(`${medicamentEndpoint}/expiration-dates/`, [requestMiddleware], healthMedicamentController.getMedicamentExpirationDates);
     // GET_BY_ID api/health/medicament/:id
     healthRouter.get(`${medicamentEndpoint}${identifier}`, [requestMiddleware], healthMedicamentController.getMedicamentById);
     // POST

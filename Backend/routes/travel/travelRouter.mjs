@@ -27,7 +27,7 @@ export const travelRouter = ({ TravelModel }) => {
     // GET api/travel/
     travelRouter.get(`${ednpointName}`, [requestMiddleware], travelController.getAllTravels);
     // GET-UNAVAILABLE-DATES --> /api/travel/unavailable-dates
-    travelRouter.get(`${unavailableDates}`, [requestMiddleware], travelController.getTravelUnavailableDates);
+    travelRouter.get(`${unavailableDates}`, [requestMiddleware], travelController.getTravelDates);
     // GET-ID api/travel/:id
     travelRouter.get(`${identifier}`, [requestMiddleware], travelController.getTravelById);
     // POST api/travel/

@@ -27,7 +27,7 @@ export class AuthController {
         // Enviamos la respuesta obtenida.
         res.status(201).send({ message: CREATED_201_MESSAGE });
     }
-    // Funcion asincrona para loguear un usuario
+    // Funcion asincrona para loguear un usuario.
     postLoginUser = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
         const result = await validateLoginUser(req.body);
@@ -35,12 +35,10 @@ export class AuthController {
         // Obtenemos del modelo los datos requeridos.
         const apiLoginUserResponse = await this.model.postLoginUser(result.data);
         // Si el email o la contraseña son incorrectos devolvemos el error correspondiente.
-        if (apiLoginUserResponse?.message === "User not found.")
-            return res.status(401).send({ message: `${UNAUTHORIZED_401_MESSAGE} ${apiLoginUserResponse.message}` });
         if (apiLoginUserResponse?.message === "Invalid input.")
             return res.status(401).send({ message: `${UNAUTHORIZED_401_MESSAGE} El email o la contraseña son incorrectos.` });
         // Si ocurre un error interno al comparar las contraseñas o al generar el token devolvemos el error correspondiente.
-        if (apiLoginUserResponse?.message === "Login error." )
+        if (apiLoginUserResponse?.message === "Login error.")
             return res.status(500).send({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. ${apiLoginUserResponse.message}.` });
         // Si el usuario no ha podido actaulizarse en la ddbb entonces devolvemos el error.
         if (apiLoginUserResponse === false) return res.status(500).send({ message: INTERNAL_SERVER_ERROR_500_MESSAGE });

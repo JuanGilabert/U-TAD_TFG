@@ -9,7 +9,7 @@ export class TravelController {
         this.model = model
         this.getAllTravels = this.getAllTravels.bind(this);
         this.getTravelById = this.getTravelById.bind(this);
-        this.getTravelUnavailableDates = this.getTravelUnavailableDates.bind(this);
+        this.getTravelDates = this.getTravelDates.bind(this);
         this.postNewTravel = this.postNewTravel.bind(this);
         this.putUpdateTravel = this.putUpdateTravel.bind(this);
         this.patchUpdateTravel = this.patchUpdateTravel.bind(this);
@@ -37,20 +37,15 @@ export class TravelController {
         // Enviamos el error.
         res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
     }
-    getTravelUnavailableDates = async (req, res) => {
+    getTravelDates = async (req, res) => {
         const { fechaSalidaViaje = "hasNoValue" } = req.query;
         // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
         const userId = await findUserIdByEmailFunction(req.user.userEmail);
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
-        const getTravelUnavailableDatesModelResponse = await this.model.getTravelUnavailableDates(userId, fechaSalidaViaje);
+        const getTravelUnavailableDatesModelResponse = await this.model.getTravelDates(userId, fechaSalidaViaje);
         // Enviamos los errores.
-        if (getTravelUnavailableDatesModelResponse?.message === "unavailableDatesError")
-            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
-        if (getTravelUnavailableDatesModelResponse?.message === "availableDatesError")
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
-        if (getTravelUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(404).send({ message: "No se pueden mostrar las reservas de esta fecha.\
-            En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
+        if (getTravelUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
+        if (getTravelUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
         // Enviamos la respuesta obtenida.
         res.status(200).json(getTravelUnavailableDatesModelResponse);
     }

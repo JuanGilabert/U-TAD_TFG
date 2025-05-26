@@ -43,12 +43,10 @@ export class PaintingController {
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getPaintingUnavailableDatesModelResponse = await this.model.getPaintingUnavailableDates(userId, fechaInicioExposicionArte);
         // Enviamos los errores.
-        if (getPaintingUnavailableDatesModelResponse?.message === "unavailableDatesError")
-            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
-        if (getPaintingUnavailableDatesModelResponse?.message === "availableDatesError")
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        if (getPaintingUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
+        if (getPaintingUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
         if (getPaintingUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(404).send({ message: "No se pueden mostrar las reservas de esta fecha.\
+            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
             En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(getPaintingUnavailableDatesModelResponse);

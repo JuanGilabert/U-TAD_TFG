@@ -41,7 +41,7 @@ export class SportModel {
         y por lo tanto si hay fechas no disponibles devolvemos una lista de fechas. */
         if (fechaInicioActividad === "hasNoValue") {
             // Si no hay fechas no disponibles, es decir si la variable unavailableDates no tiene valores, devolvemos el error.
-            if (unavailableDates.length) return unavailableDatesList;
+            if (unavailableDates.length) return { dates: unavailableDates.map(date => date.fecha.toISOString()) };
             return { message: "unavailableDatesError" };
         }
         // Creamos un Set con las fechas no disponibles en milisegundos para búsqueda rápida y efectiva.
@@ -64,7 +64,7 @@ export class SportModel {
             return !unavailableDateSet.has(new Date(dateStr).getTime());
         });
         if (!filteredDates.length) return { message: "filteredAvailableDatesError" };
-        return filteredDates.map(date => date.fechaInicioActividad);
+        return { dates: filteredDates.map(date => date.fechaInicioActividad.toISOString()) };
     }
     static async postNewSport({ sport, userId }) {
         const db = await connectDB();

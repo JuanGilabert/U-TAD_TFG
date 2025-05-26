@@ -42,13 +42,11 @@ export class CinemaController {
         const userId = await findUserIdByEmailFunction(req.user.userEmail);
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getCinemaUnavailableDatesModelResponse = await this.model.getCinemaUnavailableDates(userId, fechaInicioPelicula);
-        // Enviamos los errores.
-        if (getCinemaUnavailableDatesModelResponse?.message === "unavailableDatesError")
-            return res.status(404).send({ message: "No existen fechas de reservas no disponibles." });
-        if (getCinemaUnavailableDatesModelResponse?.message === "availableDatesError")
-            return res.status(404).send({ message: "No existen citas para esta fecha." });
+        // Enviamos los resultados.
+        if (getCinemaUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
+        if (getCinemaUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
         if (getCinemaUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(404).send({ message: "No se pueden mostrar las reservas de esta fecha.\
+            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
             En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
         // Enviamos la respuesta obtenida.
         return res.status(200).json(getCinemaUnavailableDatesModelResponse);
