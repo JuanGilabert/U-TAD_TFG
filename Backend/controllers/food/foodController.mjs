@@ -22,7 +22,7 @@ export class FoodController {
         // Obtenemos del modelo los datos requeridos.
         const getAllFoodsModelResponse = await this.model.getAllFoods(userId);
         // Enviamos el mensaje de error.
-        if (getAllFoodsModelResponse === false) return res.status(404).send({ message: "No existen citas." });
+        if (getAllFoodsModelResponse === false) return res.status(200).send({ message: "No existen citas." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(getAllFoodsModelResponse);
     }

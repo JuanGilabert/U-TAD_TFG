@@ -22,9 +22,7 @@ const cinemaSchema = z.object({
         // Convertimos el string a un objeto Date
         const date = new Date(value);
         // Validamos si la conversión fue exitosa (si la fecha es válida)
-        if (isNaN(date.getTime())) {
-            throw new Error("La fecha no es válida.");
-        }
+        if (isNaN(date.getTime())) throw new Error("La fecha no es válida.");
         return date;
     }),
     duracionPeliculaMinutos: z.number({
@@ -38,6 +36,9 @@ const cinemaSchema = z.object({
     precioEntradaPelicula: z.number({
         required_error: "El precio es requerido",
         invalid_type_error: "El precio debe ser un number"
+    }).gt(0, { message: "El precio debe ser mayor que 0" })
+    .refine(n => !Number.isInteger(n), {
+        message: "El precio debe ser un número decimal (no entero)"
     }),
     notasPelicula: z.string().optional()
 });

@@ -22,7 +22,7 @@ export class CinemaController {
         // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
         const getAllCinemasModelResponse = await this.model.getAllCinemas(userId);
         // Enviamos el error.
-        if (getAllCinemasModelResponse === false) return res.status(404).send({ message: "No existen citas." });
+        if (getAllCinemasModelResponse === false) return res.status(200).send({ message: "No existen citas." });// APLICAR EL 200 AL RESTO DE LOS CONTROLADORES
         // Enviamos la respuesta obtenida.
         res.status(200).json(getAllCinemasModelResponse);
     }

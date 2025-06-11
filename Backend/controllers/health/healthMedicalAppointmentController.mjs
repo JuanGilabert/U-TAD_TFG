@@ -22,7 +22,7 @@ export class HealthMedicalAppointmentController {
         // Obtenemos del modelo los datos requeridos.
         const apiGetAllMedicalAppointmentsResponse = await this.model.getAllMedicalAppointments(userId);
         // Enviamos el error.
-        if (apiGetAllMedicalAppointmentsResponse === false) return res.status(404).send({ message: "No existe ninguna cita medica." });
+        if (apiGetAllMedicalAppointmentsResponse === false) return res.status(200).send({ message: "No existen citas medicas." });
         // Enviamos la respuesta obtenida.
         res.status(200).json(apiGetAllMedicalAppointmentsResponse);
     }

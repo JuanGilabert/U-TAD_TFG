@@ -23,7 +23,7 @@ export class MusicController {
         // Obtenemos del modelo los datos requeridos.
         const getAllMusicsModelResponse = await this.model.getAllMusics(userId);
         // Enviamos el error.
-        if (getAllMusicsModelResponse === false) return res.status(404).send({ message: "No existe ningun evento." });
+        if (getAllMusicsModelResponse === false) return res.status(200).send({ message: "No existe ningun evento." });
         // Enviamos la respuesta obtenida
         res.status(200).json(getAllMusicsModelResponse);
     }

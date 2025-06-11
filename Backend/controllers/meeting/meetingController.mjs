@@ -22,7 +22,7 @@ export class MeetingController {
         // Obtenemos del modelo los datos requeridos.
         const getAllMeetingsModelResponse = await this.model.getAllMeetings(userId);
         // Enviamos el error.
-        if (getAllMeetingsModelResponse === false) return res.status(404).send({ message: "No existen citas." });
+        if (getAllMeetingsModelResponse === false) return res.status(200).send({ message: "No existen citas." });
         // Enviamos la respuesta.
         res.status(200).json(getAllMeetingsModelResponse);
     }

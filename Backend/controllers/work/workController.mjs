@@ -22,7 +22,7 @@ export class WorkController {
         // Obtenemos del modelo los datos requeridos.
         const getAllWorksModelResponse = await this.model.getAllWorks(userId);
         // Enviamos el error.
-        if (getAllWorksModelResponse === false) return res.status(404).send({ message: "No existen tareas." });
+        if (getAllWorksModelResponse === false) return res.status(200).send({ message: "No existen tareas." });
         // Enviamos la respuesta.
         res.status(200).json(getAllWorksModelResponse);
     }

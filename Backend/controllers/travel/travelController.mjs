@@ -22,7 +22,7 @@ export class TravelController {
         // Obtenemos del modelo los datos requeridos.
         const getAllTravelsModelResponse = await this.model.getAllTravels(userId);
         // Enviamos el error.
-        if (getAllTravelsModelResponse === false) return res.status(404).send({ message: "No existen viajes." });
+        if (getAllTravelsModelResponse === false) return res.status(200).send({ message: "No existen viajes." });
         // Enviamos la respuesta.
         res.status(200).json(getAllTravelsModelResponse);
     }

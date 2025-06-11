@@ -22,7 +22,7 @@ export class MedicamentModel {
     }
     static async getMedicamentExpirationDates(userId, fechaCaducidadMedicamento) {
         const db = await connectDB();
-        //// Not query params
+        //// Not query params.
         const now = new Date();
         const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());//YYYY-MM-DDT00:00:00.000Z
         //const tomorrowMidnight = todayMidnight.setUTCDate(todayMidnight.getUTCDate() + 1);
@@ -32,7 +32,7 @@ export class MedicamentModel {
         ).toArray();*/
         // Obtenemos una lista de fechas de las fechas de los documentos
         // donde haya 3 o mas reservas en una misma fecha. Dia: (2025-06-22).
-        const expirationDates = await db.collection(CINEMA_COLLECTION_NAME).aggregate([
+        const expirationDates = await db.collection(MEDICAMENT_COLLECTION_NAME).aggregate([
             { $match: { userId: userId } },
             // Agrupar por solo la parte de la fecha (ignorando la hora)
             {

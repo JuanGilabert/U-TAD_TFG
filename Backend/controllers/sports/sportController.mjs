@@ -22,7 +22,7 @@ export class SportController {
         // Obtenemos del modelo los datos requeridos.
         const getAllSportsModelResponse = await this.model.getAllSports(userId);
         // Enviamos el error.
-        if (getAllSportsModelResponse === false) return res.status(404).send({ message: "No hay actividades." });
+        if (getAllSportsModelResponse === false) return res.status(200).send({ message: "No hay actividades." });
         // Enviamos la respuesta.
         res.status(200).json(getAllSportsModelResponse);
     }

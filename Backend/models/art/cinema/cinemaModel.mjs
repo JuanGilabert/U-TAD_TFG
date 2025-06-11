@@ -41,8 +41,8 @@ export class CinemaModel {
         y por lo tanto si hay fechas no disponibles devolvemos una lista de fechas. */
         if (fechaInicioPelicula === "hasNoValue") {
             // Si no hay fechas no disponibles, es decir si la variable unavailableDates no tiene valores, devolvemos el error.
-            if (unavailableDates.length) return { dates: unavailableDates.map(date => date.fecha.toISOString()) };
-            return { message: "unavailableDatesError" };
+            if (!unavailableDates.length) return { message: "unavailableDatesError" };
+            return { dates: unavailableDates.map(date => date.fecha.toISOString()) };
         }
         // Creamos un Set con las fechas no disponibles en milisegundos para búsqueda rápida y efectiva.
         const unavailableDateSet = new Set(unavailableDatesList.map(d => d.getTime()));

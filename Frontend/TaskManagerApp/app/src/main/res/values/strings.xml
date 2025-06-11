@@ -1,0 +1,60 @@
+<resources>
+    <!-- GLOBAL APPLICATION STRINGS RESOURCES-->
+    <string name="app_name">TaskManagerApp</string>
+    <!-- VIEW TITLES RESOURCES -->
+    <!-- AUTH -->
+    <string name="signupScreenViewName">Crear Usuario</string>
+    <!-- TASK -->
+    <string name="taskScreenViewName">Tareas</string>
+    <!-- CINEMA -->
+    <string name="cinemaScreenViewName">Cines</string>
+    <string name="createCinemaScreenViewName">Crear Tarea</string>
+    <string name="editCinemaScreenViewName">Editar Tarea</string>
+    <!-- MUSIC -->
+    <string name="musicScreenViewName">Musica</string>
+    <string name="createMusicScreenViewName">Crear Tarea</string>
+    <string name="editMusicScreenViewName">Editar Tarea</string>
+    <!-- PAINTING -->
+    <string name="paintingScreenViewName">Arte</string>
+    <string name="createPaintingScreenViewName">Crear Tarea</string>
+    <string name="editPaintingScreenViewName">Editar Tarea</string>
+    <!-- FOOD -->
+    <string name="foodScreenViewName">Comidas</string>
+    <string name="createFoodScreenViewName">Crear Tarea</string>
+    <string name="editFoodScreenViewName">Editar Tarea</string>
+    <!-- MEDICAMENT -->
+    <string name="medicamentScreenViewName">Medicamentos</string>
+    <string name="createMedicamentScreenViewName">Crear Tarea</string>
+    <string name="editMedicamentScreenViewName">Editar Tarea</string>
+    <!-- MEDICAL APPOINTMENT-->
+    <string name="medicalAppointmentScreenViewName">Pruebas Medicas</string>
+    <string name="createMedicalAppointmentScreenViewName">Crear Tarea</string>
+    <string name="editMedicalAppointmentScreenViewName">Editar Tarea</string>
+    <!-- MEETING -->
+    <string name="meetingScreenViewName">Citas</string>
+    <string name="createMeetingScreenViewName">Crear Tarea</string>
+    <string name="editMeetingScreenViewName">Editar Tarea</string>
+    <!-- TRAVEL -->
+    <string name="travelScreenViewName">Viajes</string>
+    <string name="createTravelScreenViewName">Crear Tarea</string>
+    <string name="editTravelScreenViewName">Editar Tarea</string>
+    <!-- SPORT -->
+    <string name="sportScreenViewName">Deportes</string>
+    <string name="createSportScreenViewName">Crear Tarea</string>
+    <string name="editSportScreenViewName">Editar Tarea</string>
+    <!-- WORK -->
+    <string name="workScreenViewName">Trabajos</string>
+    <string name="createWorkScreenViewName">Crear Tarea</string>
+    .<string name="editWorkScreenViewName">Editar Tarea</string>
+    <!-- COMMON APP ELEMENTS TITLES -->
+    <!-- BUTTONS TITLES -->
+    <string name="backButtonTitle">Volver</string>
+    <string name="createButtonTitle">Crear</string>
+    <string name="updateButtonTitle">Guardar</string>
+    <string name="deleteButtonTitle">Eliminar</string>
+    <!-- BUTTONS VALUES -->
+    <string name="backButtonValue">back</string>
+    <string name="createButtonValue">create</string>
+    <string name="updateButtonValue">save</string>
+    <string name="deleteButtonValue">delete</string>
+</resources>

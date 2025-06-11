@@ -22,7 +22,7 @@ export class PaintingController {
         // Obtenemos del modelo los datos requeridos.
         const getAllPaintingsModelResponse = await this.model.getAllPaintings(userId);
         // Enviamos el error.
-        if (getAllPaintingsModelResponse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+        if (getAllPaintingsModelResponse === false) return res.status(200).send({ message: "No existen exposiciones de arte." });
         // Enviamos la respuesta.
         res.status(200).json(getAllPaintingsModelResponse);
     }
