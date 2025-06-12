@@ -1,7 +1,7 @@
 // Importamos las librerias.
 import { z } from 'zod';
 import { validEmailRegex } from '../../utils/export/GenericRegex.mjs';
-// Definir el esquema.
+// Definir los esquemas.
 const userSchema = z.object({
     userName: z.string({
         required_error: "El nombre es requerido",
