@@ -39,8 +39,6 @@ const medicamentSchema = z.object({
     }),
     notasMedicamento: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewMedicament(medicament) { return medicamentSchema.safeParseAsync(medicament); }
-function validatePartialNewMedicament(medicament) { return medicamentSchema.partial().safeParseAsync(medicament); }
-// Exportamos las funciones
-export { validateNewMedicament, validatePartialNewMedicament }
+// Exportamos las funciones que validan los datos.
+export function validateMedicament(medicament) { return medicamentSchema.safeParseAsync(medicament); }
+export function validatePartialMedicament(medicament) { return medicamentSchema.partial().safeParseAsync(medicament); }

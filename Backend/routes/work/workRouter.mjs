@@ -11,19 +11,19 @@ export const workRouter = ({ WorkModel }) => {
     const identifier = "/:id";
     const unavailableDates = "/unavailable-dates";
     // GET api/work/
-    workRouter.get(`${ednpointName}`, [requestMiddleware], workController.getAllWorks);
+    workRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], workController.getAllWorks);
     // GET-UNAVAILABLE-DATES --> /api/work/unavailable-dates
-    workRouter.get(`${unavailableDates}`, [requestMiddleware], workController.getWorkUnavailableDates);
+    workRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], workController.getWorkUnavailableDates);
     // GET-ID api/work/:id
-    workRouter.get(`${identifier}`, [requestMiddleware], workController.getWorkById);
+    workRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], workController.getWorkById);
     // POST api/work/
-    workRouter.post(`${ednpointName}`, [requestMiddleware], workController.postNewWork);
+    workRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], workController.postWork);
     // PUT
-    workRouter.put(`${identifier}`, [requestMiddleware], workController.putUpdateWork);
+    workRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], workController.putWork);
     // PATCH
-    workRouter.patch(`${identifier}`, [requestMiddleware], workController.patchUpdateWork);
+    workRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], workController.patchWork);
     // DELETE
-    workRouter.delete(`${identifier}`, [requestMiddleware], workController.deleteWork);
+    workRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], workController.deleteWork);
     //
     return workRouter;
 }

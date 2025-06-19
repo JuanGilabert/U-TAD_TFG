@@ -1,5 +1,4 @@
 // Modulos de node.
-import { randomUUID } from 'node:crypto';
 import { hash, genSalt, compare } from 'bcrypt';
 // Modulos locales.
 import { connectDB, closeDbConnection } from '../../services/database/connection/mongoDbConnection.mjs';
@@ -7,38 +6,22 @@ import { jwtGenerator } from '../../services/jwt/generator/jwtGenerator.mjs';
 import { AUTH_COLLECTION_NAME, HASH_SALT_ROUNDS, RETURN_DOCUMENT_VALUE } from '../../utils/export/GenericEnvConfig.mjs';
 import { checkIfUserEmailExistsFunction } from '../../services/database/functions/checkIfUserEmailExistsFunction.mjs';
 //// Exportamos la clase.
-export class AuthModel {
-    // Funcion asincrona para crear un nuevo usuario
-    static async postNewUser({ userName, userPassword, userEmail }) {
-        const db = await connectDB();
-        // Comprobamos que no exista el email para poder registrar al usuario. Si existe, devolvemos un error.
-        const userEmailExists = await checkIfUserEmailExistsFunction(userEmail);
-        if (userEmailExists) return { message: "Existing email." };
-        try {
-            const saltRounds = await genSalt(HASH_SALT_ROUNDS);
-            // Rezlizamos el hash de la contraseña recibida con el salt correspondiente.
-            const hashedPassword = await hash(userPassword, saltRounds);
-            // Creamos el nuevo usuario con los valores correspondientes.
-            const newUser = { _id: randomUUID(), userName, userPassword: hashedPassword, userEmail, userJWT: "" };
-            // Guardamos el nuevo usuario.
-            const { insertedId } = await db.collection(AUTH_COLLECTION_NAME).insertOne(newUser);
-            return { id: insertedId, ...newUser };
-        } catch (error) {
-            console.error("Error creating user: ", error);
-            return { message: "Error creating user." };
-        }
-    }
+export class AdminModel {
     // Funcion asincrona para loguear a un usuario
-    static async postLoginUser({ userEmail, userPassword }) {
+    static async postSignInUser({ userEmail, userPassword }) {
         const db = await connectDB();
         let token = "";
+        let hashedToken = "";
         const user = await checkIfUserEmailExistsFunction(userEmail, { returnUser: true });
         if (!user) return { message: "Invalid input." };
         try {
             const isPasswordValid = await compare(userPassword, user.userPassword);
             if (!isPasswordValid) return { message: "Invalid input." };
             // Generar JWT para el usuario.
-            token = jwtGenerator({ userEmail: user.userEmail });
+            token = jwtGenerator({ userEmail: user.userEmail, userRole: user.userRole });
+            // Hasheamos el token generado. VERIFICAR SI ESTO PUEDE GENERAR PROBLEMAS PARA LA EXTRACCION DE LA INFORMACION DEL USUARIO.
+            //const saltRounds = await genSalt(HASH_SALT_ROUNDS);
+            //hashedToken = await hash(token, saltRounds);
         } catch (error) {
             console.error("Error al loguear el usuario:", error);
             return { message: "Login error." };
@@ -53,8 +36,11 @@ export class AuthModel {
         return value.userJWT;
     }
     // Funcion asincrona para cerrar la sesion de un usuario. SE SUPONE QUE SOLO SE RECIBE UN TOKEN PARA ACTUALIZAR AL USUARIO LOGUEADO.
-    static async postLogoutUser({ userJWT }) {
+    static async postSignOutUser({ userJWT }) {
         const db = await connectDB();
+        // Hasheamos el token generado. VERIFICAR SI ESTO PUEDE GENERAR PROBLEMAS PARA LA EXTRACCION DE LA INFORMACION DEL USUARIO.
+        //const saltRounds = await genSalt(HASH_SALT_ROUNDS);
+        //let hashedUserJWT = await hash(token, saltRounds);
         const value = await db.collection(AUTH_COLLECTION_NAME).findOneAndUpdate({ userJWT: userJWT }, { $set: { userJWT: "" } });
         // Devolvemos el error obtenido al intentar cerrar la sesion.
         if (!value) return false;
@@ -62,13 +48,5 @@ export class AuthModel {
         await closeDbConnection();
         // Devolvemos la respuesta obtenida.
         return value;
-    }
-    //
-    static async getUserProfileData(userId) {
-        const db = await connectDB();
-        const user = await db.collection(AUTH_COLLECTION_NAME).findOne(
-            { userId: userId }, { projection: { _id: 0, userPassword: 0, userJWT: 0 } }
-        );
-        return user || false;
     }
 }

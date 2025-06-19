@@ -42,9 +42,7 @@ const cinemaSchema = z.object({
     }),
     notasPelicula: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewCinema(cinema) { return cinemaSchema.safeParseAsync(cinema); }
+// Exportamos las funciones que validan los datos
+export function validateCinema(cinema) { return cinemaSchema.safeParseAsync(cinema); }
 // Al ser partial, podemos omitir campos dado que todos se convierten en opcionales.
-function validatePartialNewCinema(cinema) { return cinemaSchema.partial().safeParseAsync(cinema); }
-// Exportamos las funciones
-export { validateNewCinema, validatePartialNewCinema }
+export function validatePartialCinema(cinema) { return cinemaSchema.partial().safeParseAsync(cinema); }

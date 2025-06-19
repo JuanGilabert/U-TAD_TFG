@@ -10,4 +10,6 @@ import { JWT_SECRET_KEY } from '../../../utils/export/GenericEnvConfig.mjs';
  * @param {string} param.userEmail - The email of the user for whom the token is generated.
  * @returns {string} The generated JWT, which expires in 1 hour.
  */
-export const jwtGenerator = ({ userEmail }) => { return sign({ userEmail: userEmail }, JWT_SECRET_KEY); }
+export const jwtGenerator = ({ userEmail, userRole }) => {
+    return sign({ userEmail: userEmail, userRole: userRole }, JWT_SECRET_KEY);
+};

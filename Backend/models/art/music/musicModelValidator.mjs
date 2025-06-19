@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { fechaISO8601Regex } from '../../../utils/export/GenericRegex.mjs';
+import { fechaISO8601Regex, youtubeVideoRegex } from '../../../utils/export/GenericRegex.mjs';
 // Definimos el esquema.
 const musicSchema = z.object({
     nombreEvento: z.string({
@@ -50,8 +50,14 @@ const musicSchema = z.object({
     }),
     notasEvento: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewMusic(music) { return musicSchema.safeParseAsync(music); }
-function validatePartialNewMusic(music) { return musicSchema.partial().safeParseAsync(music); }
-// Exportamos las funciones
-export { validateNewMusic, validatePartialNewMusic }
+const musicVideoDownloadSchema = z.object({
+    url: z.string({
+        required_error: "La url es requerida",
+        invalid_type_error: "La url debe ser un string"
+    }).regex(youtubeVideoRegex, "La url debe ser de un video de youtube"),
+    formato: z.enum(["aac", "aiff", "alac", "dsd", "flac", "pcm", "mp3", "mp4", "ogg", "wav"]).optional()//establecer los indicados en el script.PY
+});
+// Exportamos las funciones que validan los datos.
+export function validateMusic(music) { return musicSchema.safeParseAsync(music); }
+export function validatePartialMusic(music) { return musicSchema.partial().safeParseAsync(music); }
+export function validateMusicVideoDownload(musicVideo) { return musicVideoDownloadSchema.safeParseAsync(musicVideo); }

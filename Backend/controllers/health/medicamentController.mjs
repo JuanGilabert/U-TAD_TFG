@@ -1,36 +1,39 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateTravel, validatePartialTravel } from '../../models/travel/travelModelValidator.mjs';
+// Importamos los modelos/schemas
+import { validateMedicament, validatePartialMedicament } from '../../models/health/medicament/medicamentModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
 } from '../../utils/export/GenericEnvConfig.mjs';
-export class TravelController {
-    constructor({ model }) { 
-        this.model = model
-        this.getAllTravels = this.getAllTravels.bind(this);
-        this.getTravelById = this.getTravelById.bind(this);
-        this.getTravelDates = this.getTravelDates.bind(this);
-        this.postTravel = this.postTravel.bind(this);
-        this.putTravel = this.putTravel.bind(this);
-        this.patchTravel = this.patchTravel.bind(this);
-        this.deleteTravel = this.deleteTravel.bind(this);
+export class HealthMedicamentController {
+    constructor({ model }) { this.model = model;
+        this.getAllMedicaments = this.getAllMedicaments.bind(this);
+        this.getMedicamentById = this.getMedicamentById.bind(this);
+        this.getMedicamentExpirationDates = this.getMedicamentExpirationDates.bind(this);
+        this.postMedicament = this.postMedicament.bind(this);
+        this.putMedicament = this.putMedicament.bind(this);
+        this.patchMedicament = this.patchMedicament.bind(this);
+        this.deleteMedicament = this.deleteMedicament.bind(this);
     }
     //
-    getAllTravels = async (req, res) => {
+    getAllMedicaments = async (req, res) => {
+        // Verificamos que los valores de la peticion sean validos.
+        let result = "";
+        if (fechaCaducidadMedicamento !== "hasNoValue") result = await validatePartialMedicament({ fechaCaducidadMedicamento });
+        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
-        const {
-            fechaSalidaViaje = "hasNoValue", fechaRegresoViaje = "hasNoValue"
-        } = req.query;
+        const { fechaCaducidadMedicamento = "hasNoValue" } = req.query;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const getAllTravelsModelResponse = await this.model.getAllTravels(userId, fechaSalidaViaje, fechaRegresoViaje);
+            const getAllMedicamentsModelResponse = await this.model.getAllMedicaments(userId, fechaCaducidadMedicamento);
             // Enviamos el error o la respuesta obtenida.
-            return getAllTravelsModelResponse === null ? res.status(404).json({ message: "Todavia no existe ningun viaje." })
-            : getAllTravelsModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_QUERY_MESSAGE })
-            : res.status(200).json(getAllTravelsModelResponse);
+            return getAllMedicamentsModelResponse === null ?
+            res.status(404).json({ message: "No existen medicamentos." })
+            : getAllMedicamentsModelResponse === false ?
+            res.status(404).json({ message: NOT_FOUND_404_QUERY_MESSAGE })
+            : res.status(200).json(getAllMedicamentsModelResponse);
         } catch (error) {
             // Posible excepcion causada por el metodo .toArray() entre otros.
             console.error(error);
@@ -38,32 +41,30 @@ export class TravelController {
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    //
-    getTravelById = async (req, res) => {
+    getMedicamentById = async (req, res) => {
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const getTravelByIdModelResponse = await this.model.getTravelById(id, userId);
+            const getMedicamentByIdModelResponse = await this.model.getMedicamentById(id, userId);
             // Enviamos el error o la respuesta obtenida.
-            return !getTravelByIdModelResponse ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
-            : res.status(200).json(getTravelByIdModelResponse);
+            return !getMedicamentByIdModelResponse ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(getMedicamentByIdModelResponse);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    getTravelDates = async (req, res) => {
+    getMedicamentExpirationDates = async (req, res) => {
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const getTravelUnavailableDatesModelResponse = await this.model.getTravelDates(userId);
-            // Enviamos el error o la respuesta obtenida.
-            return !getTravelUnavailableDatesModelResponse ?
+            const getMedicamentsExpirationDateModelResponse = await this.model.getMedicamentExpirationDates(userId);
+            return !getMedicamentsExpirationDateModelResponse ?
             res.status(404).json({ message: "No existen fechas de reserva no disponibles." })
-            : res.status(200).json(getTravelUnavailableDatesModelResponse);
+            : res.status(200).json(getMedicamentsExpirationDateModelResponse);
         } catch (error) {
             // Posible excepcion causada por el metodo .toArray() o por el metodo aggregate([]).
             console.error(error);
@@ -71,68 +72,68 @@ export class TravelController {
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    postTravel = async (req, res) => {
+    postMedicament = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateTravel(req.body);
+        const result = await validateMedicament(req.body);
         if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos del modelo los datos requeridos.
         const { userId } = req.user;
         try {
-            const postTravelModelResponse = await this.model.postTravel({ travel: result.data, userId });
+            const apiPostNewMedicamentResponse = await this.model.postMedicament({ medicament: result.data, userId });
             // Enviamos la respuesta obtenida.
-            if (postTravelModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
+            if (apiPostNewMedicamentResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
-            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. No se ha podido crear el viaje.` });
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. Error al crear el medicamento.` });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error.message || error}` });
         }
     }
-    putTravel = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateTravel(req.body);
+    putMedicament = async (req, res) => {
+        // Validaciones del objeto a insertar.
+        const result = await validateMedicament(req.body);
         if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putTravelModelResponse = await this.model.putTravel({ id, travel: result.data, userId });
+            const putMedicamentModelResponse = await this.model.putMedicament({ id, medicament: result.data, userId });
             // Enviamos el error o la respuesta obtenida.
-            return putTravelModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            return putMedicamentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    patchTravel = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialTravel(req.body);
+    patchMedicament = async (req, res) => {
+        // Validaciones del objeto a actualizar.
+        const result = await validatePartialMedicament(req.body);
         if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchTravelModelResponse = await this.model.patchTravel({ id, travel: result.data, userId });
+            const patchMedicamentModelResponse = await this.model.patchMedicament({ id, medicament: result.data, userId });
             // Enviamos el error o la respuesta obtenida.
-            return patchTravelModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
-            : res.status(200).json(patchTravelModelResponse);
+            return patchMedicamentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(patchMedicamentModelResponse);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    deleteTravel = async (req, res) => {
+    deleteMedicament = async (req, res) => {
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const deleteTravelModelResponse = await this.model.deleteTravel(id, userId);
+            const apiDeleteMedicamentResponse = await this.model.deleteMedicament(id, userId);
             // Enviamos la respuesta obtenida.
-            if (deleteTravelModelResponse) return res.status(204).send();
+            if (apiDeleteMedicamentResponse) return res.status(204).send();
             // Enviamos el error obtenido.
             return res.status(404).json({ message: NOT_FOUND_404_MESSAGE });
         } catch (error) {

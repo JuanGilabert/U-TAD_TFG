@@ -50,8 +50,6 @@ const meetingSchema = z.object({
     }),
     notasReunion: z.string().optional()
 });
-// Definir las funciones que validan los datos
-function validateNewMeeting(meeting) { return meetingSchema.safeParseAsync(meeting); }
-function validatePartialNewMeeting(meeting) { return meetingSchema.partial().safeParseAsync(meeting); }
-// Exportar las funciones
-export { validateNewMeeting, validatePartialNewMeeting }
+// Exportamos las funciones que validan los datos.
+export function validateMeeting(meeting) { return meetingSchema.safeParseAsync(meeting); }
+export function validatePartialMeeting(meeting) { return meetingSchema.partial().safeParseAsync(meeting); }

@@ -10,8 +10,8 @@ import { TravelController } from '../../controllers/travel/travelController.mjs'
  * - GET /api/travel/: Retrieves all travel records.
  * - GET /api/travel/:id: Retrieves a travel record by its unique identifier.
  * - POST /api/travel/: Creates a new travel record.
- * - PUT /api/travel/:id: Updates an entire travel record by its unique identifier.
- * - PATCH /api/travel/:id: Updates parts of a travel record by its unique identifier.
+ * - PUT /api/travel/:id: s an entire travel record by its unique identifier.
+ * - PATCH /api/travel/:id: s parts of a travel record by its unique identifier.
  * - DELETE /api/travel/:id: Deletes a travel record by its unique identifier.
  *
  * @param {Object} param0 - An object containing the TravelModel.
@@ -25,19 +25,19 @@ export const travelRouter = ({ TravelModel }) => {
     const identifier = "/:id";
     const unavailableDates = "/unavailable-dates";
     // GET api/travel/
-    travelRouter.get(`${ednpointName}`, [requestMiddleware], travelController.getAllTravels);
+    travelRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], travelController.getAllTravels);
     // GET-UNAVAILABLE-DATES --> /api/travel/unavailable-dates
-    travelRouter.get(`${unavailableDates}`, [requestMiddleware], travelController.getTravelDates);
+    travelRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], travelController.getTravelDates);
     // GET-ID api/travel/:id
-    travelRouter.get(`${identifier}`, [requestMiddleware], travelController.getTravelById);
+    travelRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.getTravelById);
     // POST api/travel/
-    travelRouter.post(`${ednpointName}`, [requestMiddleware], travelController.postNewTravel);
+    travelRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], travelController.postTravel);
     // PUT
-    travelRouter.put(`${identifier}`, [requestMiddleware], travelController.putUpdateTravel);
+    travelRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.putTravel);
     // PATCH
-    travelRouter.patch(`${identifier}`, [requestMiddleware], travelController.patchUpdateTravel);
+    travelRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.patchTravel);
     // DELETE
-    travelRouter.delete(`${identifier}`, [requestMiddleware], travelController.deleteTravel);
+    travelRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.deleteTravel);
     // DEvolvemos la configuración del router.
     return travelRouter;
 }

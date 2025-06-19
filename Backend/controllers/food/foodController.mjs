@@ -1,8 +1,10 @@
 // Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateNewFood, validatePartialNewFood } from '../../models/food/foodModelValidator.mjs';
-import { findUserIdByEmailFunction } from '../../services/database/functions/findUserIdByEmailFunction.mjs';
+import { validateFood, validatePartialFood } from '../../models/food/foodModelValidator.mjs';
 // Importamos los mensajes genericos.
-import { OKEY_200_MESSAGE, CREATED_201_MESSAGE, NOT_FOUND_404_MESSAGE, INTERNAL_SERVER_ERROR_500_MESSAGE
+import {
+    OKEY_200_MESSAGE, CREATED_201_MESSAGE,
+    NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
+    INTERNAL_SERVER_ERROR_500_MESSAGE
 } from '../../utils/export/GenericEnvConfig.mjs';
 export class FoodController {
     constructor({ model }) {
@@ -10,95 +12,136 @@ export class FoodController {
         this.getAllFoods = this.getAllFoods.bind(this);
         this.getFoodById = this.getFoodById.bind(this);
         this.getFoodUnavailableDates = this.getFoodUnavailableDates.bind(this);
-        this.postNewFood = this.postNewFood.bind(this);
-        this.putUpdateFood = this.putUpdateFood.bind(this);
-        this.patchUpdateFood = this.patchUpdateFood.bind(this);
+        this.postFood = this.postFood.bind(this);
+        this.putFood = this.putFood.bind(this);
+        this.patchFood = this.patchFood.bind(this);
         this.deleteFood = this.deleteFood.bind(this);
     }
     //
     getAllFoods = async (req, res) => {
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos los valores de la peticion.
+        const { userId } = req.user;
+        const { tipoComida = "hasNoValue", fechaReserva = "hasNoValue" } = req.query;
+        // Verificamos que los valores de la peticion sean validos.
+        let result = "";
+        if (tipoComida !== "hasNoValue") result = await validatePartialFood({ tipoComida });
+        if (fechaReserva !== "hasNoValue") result = await validatePartialFood({ fechaReserva });
+        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos del modelo los datos requeridos.
-        const getAllFoodsModelResponse = await this.model.getAllFoods(userId);
-        // Enviamos el mensaje de error.
-        if (getAllFoodsModelResponse === false) return res.status(200).send({ message: "No existen citas." });
-        // Enviamos la respuesta obtenida.
-        res.status(200).json(getAllFoodsModelResponse);
+        try {
+            const getAllFoodsModelResponse = await this.model.getAllFoods(userId, tipoComida, fechaReserva);
+            // Enviamos el error o la respuesta obtenida.
+            return getAllFoodsModelResponse === null ?
+            res.status(404).json({ message: "Todavia no existe ninguna cita." })
+            : getAllFoodsModelResponse === false ?
+            res.status(404).json({ message: NOT_FOUND_404_QUERY_MESSAGE })
+            : res.status(200).json(getAllFoodsModelResponse);
+        } catch (error) {
+            // Posible excepcion causada por el metodo .toArray() entre otros.
+            console.error(error);
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
+        return res.status(200).json(getAllFoodsModelResponse);
     }
     getFoodById = async (req, res) => {
+        // Obtenemos los valores de la peticion.
         const { id } = req.params;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
-        // Obtenemos del modelo los datos requeridos. Enviamos la respuesta obtenida.
-        const getFoodByIdModelResponse = await this.model.getFoodById(id, userId);
-        if (getFoodByIdModelResponse) return res.status(200).json(getFoodByIdModelResponse);
-        // Enviamos el mensaje de error.
-        res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+        const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
+        try {
+            const getFoodByIdModelResponse = await this.model.getFoodById(id, userId);
+            // Enviamos el error o la respuesta obtenida.
+            return !getFoodByIdModelResponse ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(getFoodByIdModelResponse);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
     getFoodUnavailableDates = async (req, res) => {
-        const { fechaReserva = "hasNoValue" } = req.query;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
-        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
-        const getFoodUnavailableDatesModelResponse = await this.model.getFoodUnavailableDates(userId, fechaReserva);
-        // Enviamos los errores.
-        if (getFoodUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
-        if (getFoodUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
-        if (getFoodUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
-            En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
-        // Enviamos la respuesta obtenida.
-        res.status(200).json(getFoodUnavailableDatesModelResponse);
-    }
-    postNewFood = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateNewFood(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos los valores de la peticion.
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const postNewFoodModelResult = await this.model.postNewFood({ food: result.data, userId });
-        if (postNewFoodModelResult) return res.status(201).send({ message: CREATED_201_MESSAGE });
-        // Enviamos el mensaje de error.
-        res.status(500).send({ message: INTERNAL_SERVER_ERROR_500_MESSAGE });
+        try {
+            const getFoodUnavailableDatesModelResponse = await this.model.getFoodUnavailableDates(userId);
+            return !getFoodUnavailableDatesModelResponse ?
+            res.status(404).json({ message: "No existen fechas de reserva no disponibles." })
+            : res.status(200).json(getFoodUnavailableDatesModelResponse);
+        } catch (error) {
+            // Posible excepcion causada por el metodo .toArray() o por el metodo aggregate([]).
+            console.error(error);
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
-    putUpdateFood = async (req, res) => {
+    postFood = async (req, res) => {
+        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
+        const result = await validateFood(req.body);
+        if (result.error) return res.status(422).json({ message: result.error.message });
+        // Obtenemos del modelo los datos requeridos.
+        const { userId } = req.user;
+        try {
+            const postNewFoodModelResult = await this.model.postFood({ food: result.data, userId });
+            // Enviamos la respuesta obtenida.
+            if (postNewFoodModelResult) return res.status(201).json({ message: CREATED_201_MESSAGE });
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: INTERNAL_SERVER_ERROR_500_MESSAGE });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error.message || error}` });
+        }
+    }
+    putFood = async (req, res) => {
+        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
+        const result = await validateFood(req.body);
+        if (result.error) return res.status(422).json({ message: result.error.message });
+        // Obtenemos los valores de la peticion.
         const { id } = req.params;
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateNewFood(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const putUpdateFoodModelResponse = await this.model.putUpdateFood({ id, food: result.data, userId });
-        // Enviamos el mensaje de error.
-        if (putUpdateFoodModelResponse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
-        // Enviamos la respuesta obtenida.
-        res.status(200).send({ message: OKEY_200_MESSAGE });
+        try {
+            const putFoodModelResponse = await this.model.putFood({ id, food: result.data, userId });
+            // Enviamos el error o la respuesta obtenida.
+            return putFoodModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json({ message: OKEY_200_MESSAGE });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
-    patchUpdateFood = async (req, res) => {
-        const { id } = req.params;
+    patchFood = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialNewFood(req.body);
+        const result = await validatePartialFood(req.body);
         if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos los valores de la peticion.
+        const { id } = req.params;
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const patchUpdateFoodModelRespnse = await this.model.patchUpdateFood({ id, food: result.data, userId });
-        // Enviamos el mensaje de error.
-        if (patchUpdateFoodModelRespnse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
-        // Enviamos la respuesta obtenida.
-        res.status(200).json(patchUpdateFoodModelRespnse);
+        try {
+            const patchFoodModelRespnse = await this.model.patchFood({ id, food: result.data, userId });
+            // Enviamos el error o la respuesta obtenida.
+            return patchFoodModelRespnse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(patchFoodModelRespnse);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
     deleteFood = async (req, res) => {
+        // Obtenemos los valores de la peticion.
         const { id } = req.params;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const deleteFoodModelResponse = await this.model.deleteFood(id, userId);
-        if (deleteFoodModelResponse) return res.status(204).json(deleteFoodModelResponse);
-        // Enviamos el mensaje de error.
-        res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+        try {
+            const deleteFoodModelResponse = await this.model.deleteFood(id, userId);
+            // Enviamos la respuesta obtenida.
+            if (deleteFoodModelResponse) return res.status(204).send();
+            // Enviamos el error obtenido.
+            return res.status(404).json({ message: NOT_FOUND_404_MESSAGE });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
 }

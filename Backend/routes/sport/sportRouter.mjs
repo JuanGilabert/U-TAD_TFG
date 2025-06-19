@@ -10,15 +10,15 @@ import { SportController } from '../../controllers/sports/sportController.mjs';
  * - GET /: Retrieves a list of all sports.
  * - GET /:id: Retrieves a specific sport by ID.
  * - POST /: Adds a new sport entry.
- * - PUT /:id: Updates an existing sport entry by ID.
- * - PATCH /:id: Partially updates an existing sport entry by ID.
+ * - PUT /:id: s an existing sport entry by ID.
+ * - PATCH /:id: Partially s an existing sport entry by ID.
  * - DELETE /:id: Deletes a sport entry by ID.
  * 
  * All endpoints use a request middleware for validation or preprocessing.
  * 
- * @param {Object} param - An object containing the SportModel.
- * @param {Object} param.SportModel - The model used for sport data operations.
- * @returns {Router} An Express router for sport-related endpoints.
+ * @param {Object} param - Objeto que contiene el modelo de deporte(SportModel).
+ * @param {Object} param.SportModel - El modelo usado para realizar las operaciones.
+ * @returns {Router} Un Router de Express para los endpoints relacionados con deportes.
  */
 export const sportRouter = ({ SportModel }) => {
     const sportRouter = Router();
@@ -28,19 +28,19 @@ export const sportRouter = ({ SportModel }) => {
     const identifier = "/:id";
     const unavailableDates = "/unavailable-dates";
     // GET api/sport/
-    sportRouter.get(`${ednpointName}`, [requestMiddleware], sportController.getAllSports);
+    sportRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], sportController.getAllSports);
     // GET-UNAVAILABLE-DATES --> /api/sport/unavailable-dates
-    sportRouter.get(`${unavailableDates}`, [requestMiddleware], sportController.getSportUnavailableDates);
+    sportRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], sportController.getSportUnavailableDates);
     // GET-ID api/sport/:id
-    sportRouter.get(`${identifier}`, [requestMiddleware], sportController.getSportById);
+    sportRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], sportController.getSportById);
     // POST 
-    sportRouter.post(`${ednpointName}`, [requestMiddleware], sportController.postNewSport);
+    sportRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], sportController.postSport);
     // PUT
-    sportRouter.put(`${identifier}`, [requestMiddleware], sportController.putUpdateSport);
+    sportRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], sportController.putSport);
     // PATCH
-    sportRouter.patch(`${identifier}`, [requestMiddleware], sportController.patchUpdateSport);
+    sportRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], sportController.patchSport);
     // DELETE
-    sportRouter.delete(`${identifier}`, [requestMiddleware], sportController.deleteSport);
+    sportRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], sportController.deleteSport);
     // DEvolvemos la configuración del router.
     return sportRouter;
 }

@@ -18,19 +18,19 @@ export const foodRouter = ({ FoodModel }) => {
     const identifier = "/:id";
     const unavailableDates = "/unavailable-dates";
     // GET --> /api/food/
-    foodRouter.get(`${endpointName}`, [requestMiddleware], foodController.getAllFoods);
+    foodRouter.get(`${endpointName}`, [authMiddleware], [requestMiddleware], foodController.getAllFoods);
     // GET-UNAVAILABLE-DATES --> /api/food/unavailable-dates
-    foodRouter.get(`${unavailableDates}`, [requestMiddleware], foodController.getFoodUnavailableDates);
+    foodRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], foodController.getFoodUnavailableDates);
     // GET-ID --> /api/food/:id
-    foodRouter.get(`${identifier}`, [requestMiddleware], foodController.getFoodById);
+    foodRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], foodController.getFoodById);
     // POST
-    foodRouter.post(`${endpointName}`, [requestMiddleware], foodController.postNewFood);
+    foodRouter.post(`${endpointName}`, [authMiddleware], [requestMiddleware], foodController.postFood);
     // PUT
-    foodRouter.put(`${identifier}`, [requestMiddleware], foodController.putUpdateFood);
+    foodRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], foodController.putFood);
     // PATCH
-    foodRouter.patch(`${identifier}`, [requestMiddleware], foodController.patchUpdateFood);
+    foodRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], foodController.patchFood);
     // DELETE
-    foodRouter.delete(`${identifier}`, [requestMiddleware], foodController.deleteFood);
+    foodRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], foodController.deleteFood);
     // Devolvemos la configuración del router.
     return foodRouter;
 }

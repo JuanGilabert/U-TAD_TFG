@@ -50,8 +50,6 @@ const paintingSchema = z.object({
     }),
     notasExposicionArte: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewPainting(painting) { return paintingSchema.safeParseAsync(painting); }
-function validatePartialNewPainting(painting) { return paintingSchema.partial().safeParseAsync(painting); }
-// Exportamos las funciones.
-export { validateNewPainting, validatePartialNewPainting }
+// Exportamos las funciones que validan los datos.
+export function validatePainting(painting) { return paintingSchema.safeParseAsync(painting); }
+export function validatePartialPainting(painting) { return paintingSchema.partial().safeParseAsync(painting); }

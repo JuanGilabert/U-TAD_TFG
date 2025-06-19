@@ -29,8 +29,6 @@ const medicalAppointmentSchema = z.object({
     }),
     notasCitaMedica: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewMedicalAppointment(medicalAppointment) { return medicalAppointmentSchema.safeParseAsync(medicalAppointment); }
-function validatePartialNewMedicalAppointment(medicalAppointment) { return medicalAppointmentSchema.partial().safeParseAsync(medicalAppointment); }
-// Exportamos las funciones
-export { validateNewMedicalAppointment, validatePartialNewMedicalAppointment }
+// Exportamos las funciones que validan los datos
+export function validateMedicalAppointment(medicalAppointment) { return medicalAppointmentSchema.safeParseAsync(medicalAppointment); }
+export function validatePartialMedicalAppointment(medicalAppointment) { return medicalAppointmentSchema.partial().safeParseAsync(medicalAppointment); }

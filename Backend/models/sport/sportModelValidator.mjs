@@ -33,8 +33,6 @@ const sportSchema = z.object({
     })),
     notasActividad: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewSport(sport) { return sportSchema.safeParseAsync(sport); }
-function validatePartialNewSport(sport) { return sportSchema.partial().safeParseAsync(sport); }
-// Exportamos las funciones
-export { validateNewSport, validatePartialNewSport }
+// Exportamos las funciones que validan los datos
+export function validateSport(sport) { return sportSchema.safeParseAsync(sport); }
+export function validatePartialSport(sport) { return sportSchema.partial().safeParseAsync(sport); }

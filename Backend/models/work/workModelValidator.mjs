@@ -47,7 +47,5 @@ const workSchema = z.object({
     notasTarea: z.string().optional()
 });
 // Definimos las funciones que validan los datos
-function validateNewWork(work) { return workSchema.safeParseAsync(work); }
-function validatePartialNewWork(work) { return workSchema.partial().safeParseAsync(work); }
-// Exportamos las funciones
-export { validateNewWork, validatePartialNewWork }
+export function validateWork(work) { return workSchema.safeParseAsync(work); }
+export function validatePartialWork(work) { return workSchema.partial().safeParseAsync(work); }

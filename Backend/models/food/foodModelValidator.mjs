@@ -33,8 +33,6 @@ const foodSchema = z.object({
     }).int().positive(),
     notasReserva: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewFood(food) { return foodSchema.safeParseAsync(food); }
-function validatePartialNewFood(food) { return foodSchema.partial().safeParseAsync(food); }
-// Exportamos las funciones
-export { validateNewFood, validatePartialNewFood }
+// Exportamos las funciones que validan los datos.
+export function validateFood(food) { return foodSchema.safeParseAsync(food); }
+export function validatePartialFood(food) { return foodSchema.partial().safeParseAsync(food); }

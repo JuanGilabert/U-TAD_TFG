@@ -50,8 +50,6 @@ const travelSchema = z.object({
     })).optional(),
     notasViaje: z.string().optional()
 });
-// Definimos las funciones que validan los datos
-function validateNewTravel(travel) { return travelSchema.safeParseAsync(travel); }
-function validatePartialNewTravel(travel) { return travelSchema.partial().safeParseAsync(travel); }
-// Exportamos las funciones
-export { validateNewTravel, validatePartialNewTravel }
+// Exportamos las funciones que validan los datos
+export function validateTravel(travel) { return travelSchema.safeParseAsync(travel); }
+export function validatePartialTravel(travel) { return travelSchema.partial().safeParseAsync(travel); }

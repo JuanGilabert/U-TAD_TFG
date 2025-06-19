@@ -1,8 +1,10 @@
 // Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateNewMeeting, validatePartialNewMeeting } from '../../models/meeting/meetingModelValidator.mjs';
-import { findUserIdByEmailFunction } from '../../services/database/functions/findUserIdByEmailFunction.mjs';
+import { validateMeeting, validatePartialMeeting } from '../../models/meeting/meetingModelValidator.mjs';
 // Importamos los mensajes genericos.
-import { OKEY_200_MESSAGE, CREATED_201_MESSAGE, NOT_FOUND_404_MESSAGE, INTERNAL_SERVER_ERROR_500_MESSAGE
+import {
+    OKEY_200_MESSAGE, CREATED_201_MESSAGE,
+    NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
+    INTERNAL_SERVER_ERROR_500_MESSAGE
 } from '../../utils/export/GenericEnvConfig.mjs';
 export class MeetingController {
     constructor({ model }) { 
@@ -10,95 +12,133 @@ export class MeetingController {
         this.getAllMeetings = this.getAllMeetings.bind(this);
         this.getMeetingById = this.getMeetingById.bind(this);
         this.getMeetingUnavailableDates = this.getMeetingUnavailableDates.bind(this);
-        this.postNewMeeting = this.postNewMeeting.bind(this);
-        this.putUpdateMeeting = this.putUpdateMeeting.bind(this);
-        this.patchUpdateMeeting = this.patchUpdateMeeting.bind(this);
+        this.postMeeting = this.postMeeting.bind(this);
+        this.putMeeting = this.putMeeting.bind(this);
+        this.patchMeeting = this.patchMeeting.bind(this);
         this.deleteMeeting = this.deleteMeeting.bind(this);
     }
     //
     getAllMeetings = async (req, res) => {
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Verificamos que los valores de la peticion sean validos.
+        let result = "";
+        if (fechaInicioReunion !== "hasNoValue") result = await validatePartialMeeting({ fechaInicioReunion });
+        if (fechaFinReunion !== "hasNoValue") result = await validateMeeting({ fechaFinReunion });
+        if (result.error) return res.status(400).json({ message: result.error.message });
+        // Obtenemos los valores de la peticion.
+        const { userId } = req.user;
+        const { fechaInicioReunion = "hasNoValue", fechaFinReunion = "hasNoValue" } = req.query;
         // Obtenemos del modelo los datos requeridos.
-        const getAllMeetingsModelResponse = await this.model.getAllMeetings(userId);
-        // Enviamos el error.
-        if (getAllMeetingsModelResponse === false) return res.status(200).send({ message: "No existen citas." });
-        // Enviamos la respuesta.
-        res.status(200).json(getAllMeetingsModelResponse);
+        try {
+            const getAllMeetingsModelResponse = await this.model.getAllMeetings(userId, fechaInicioReunion, fechaFinReunion);
+            // Enviamos el error o la respuesta obtenida.
+            return getAllMeetingsModelResponse === null ? res.status(404).json({ message: "Todavia no existe ninguna cita." })
+            : getAllMeetingsModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_QUERY_MESSAGE })
+            : res.status(200).json(getAllMeetingsModelResponse);
+        } catch (error) {
+            // Posible excepcion causada por el metodo .toArray() entre otros.
+            console.error(error);
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
     getMeetingById = async (req, res) => {
+        // Obtenemos los valores de la peticion.
         const { id } = req.params;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const getMeetingByIdModelResponse = await this.model.getMeetingById(id, userId);
-        // Enviamos la respuesta.
-        if (getMeetingByIdModelResponse) return res.status(200).json(getMeetingByIdModelResponse);
-        // Enviamos el error.
-        res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+        try {
+            const getMeetingByIdModelResponse = await this.model.getMeetingById(id, userId);
+            // Enviamos el error o la respuesta obtenida.
+            return !getMeetingByIdModelResponse ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(getMeetingByIdModelResponse);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
     getMeetingUnavailableDates = async (req, res) => {
-        const { fechaInicioReunion = "hasNoValue" } = req.query;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
-        // Obtenemos del modelo los datos requeridos enviando el ususario que solicita los datos.
-        const getMeetingUnavailableDatesModelResponse = await this.model.getMeetingUnavailableDates(userId, fechaInicioReunion);
-        // Enviamos los errores.
-        if (getMeetingUnavailableDatesModelResponse?.message === "unavailableDatesError") return res.status(200).send({ dates: [] });
-        if (getMeetingUnavailableDatesModelResponse?.message === "availableDatesError") return res.status(200).send({ dates: [] });
-        if (getMeetingUnavailableDatesModelResponse?.message === "filteredAvailableDatesError")
-            return res.status(200).send({ message: "No se pueden mostrar las reservas de esta fecha.\
-            En esta fecha ya hay 3 citas o mas y no se pueden realizar reservas en esta fecha." });
-        // Enviamos la respuesta obtenida.
-        res.status(200).json(getMeetingUnavailableDatesModelResponse);
-    }
-    postNewMeeting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateNewMeeting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
-        // Obtenemos del modelo los datos requeridos. Enviamos la respuesta obtenida.
-        const postNewMeetingModelResponse = await this.model.postNewMeeting({ meeting: result.data, userId });
-        if (postNewMeetingModelResponse) return res.status(201).send({ message: CREATED_201_MESSAGE });
-        // Enviamos el error.
-        res.status(500).send({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. No se ha podido crear la cita.` });
-    }
-    putUpdateMeeting = async (req, res) => {
-        const { id } = req.params;
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateNewMeeting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        // Obtenemos los valores de la peticion.
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const putUpdateMeetingModelResponse = await this.model.putUpdateMeeting({ id, meeting: result.data, userId });
-        // Enviamos el error.
-        if (putUpdateMeetingModelResponse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
-        // Enviamos la respuesta.
-        res.status(200).send({ message: OKEY_200_MESSAGE });
+        try {
+            const getMeetingUnavailableDatesModelResponse = await this.model.getMeetingUnavailableDates(userId);
+            return !getMeetingUnavailableDatesModelResponse ?
+            res.status(404).json({ message: "No existen fechas de reserva no disponibles." })
+            : res.status(200).json(getMeetingUnavailableDatesModelResponse);
+        } catch (error) {
+            // Posible excepcion causada por el metodo .toArray() o por el metodo aggregate([]).
+            console.error(error);
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
-    patchUpdateMeeting = async (req, res) => {
-        const { id } = req.params;
+    postMeeting = async (req, res) => {
         // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialNewMeeting(req.body);
+        const result = await validateMeeting(req.body);
         if (result.error) return res.status(422).json({ message: result.error.message });
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
-        // Obtenemos del modelo los datos requeridos. Si no hay body valido devolvemos un error.
-        const putUpdateMeetingModelResponse = await this.model.patchUpdateMeeting({ id, meeting: result.data, userId });
-        if (putUpdateMeetingModelResponse === false) return res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
-        // Enviamos la respuesta.
-        res.status(200).json(putUpdateMeetingModelResponse);
+        // Obtenemos del modelo los datos requeridos.
+        const { userId } = req.user;
+        try {
+            const postNewMeetingModelResponse = await this.model.postMeeting({ meeting: result.data, userId });
+            // Enviamos la respuesta obtenida.
+            if (postNewMeetingModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
+            // Enviamos el error obtenido.
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. Error al crear la cita.` });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error.message || error}` });
+        }
+    }
+    putMeeting = async (req, res) => {
+        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
+        const result = await validateMeeting(req.body);
+        if (result.error) return res.status(422).json({ message: result.error.message });
+        // Obtenemos los valores de la peticion.
+        const { id } = req.params;
+        const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
+        try {
+            const putMeetingModelResponse = await this.model.putMeeting({ id, meeting: result.data, userId });
+            // Enviamos el error o la respuesta obtenida.
+            return putMeetingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json({ message: OKEY_200_MESSAGE });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
+    }
+    patchMeeting = async (req, res) => {
+        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
+        const result = await validatePartialMeeting(req.body);
+        if (result.error) return res.status(422).json({ message: result.error.message });
+        // Obtenemos los valores de la peticion.
+        const { id } = req.params;
+        const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
+        try {
+            const patchMeetingModelResponse = await this.model.patchMeeting({ id, meeting: result.data, userId });
+            // Enviamos el error o la respuesta obtenida.
+            return patchMeetingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
+            : res.status(200).json(patchMeetingModelResponse);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
     deleteMeeting = async (req, res) => {
+        // Obtenemos los valores de la peticion.
         const { id } = req.params;
-        // Utilizamos la funcion para obtener el id del usuario correspondiente con el email recibido en req.user.userEmail.
-        const userId = await findUserIdByEmailFunction(req.user.userEmail);
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
-        const deleteMeetingModelResponse = await this.model.deleteMeeting(id, userId);
-        if (deleteMeetingModelResponse) return res.status(204).json(deleteMeetingModelResponse);
-        // Enviamos el error.
-        res.status(404).send({ message: NOT_FOUND_404_MESSAGE });
+        try {
+            const deleteMeetingModelResponse = await this.model.deleteMeeting(id, userId);
+            // Enviamos la respuesta obtenida.
+            if (deleteMeetingModelResponse) return res.status(204).send();
+            // Enviamos el error obtenido.
+            return res.status(404).json({ message: NOT_FOUND_404_MESSAGE });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
+        }
     }
 }

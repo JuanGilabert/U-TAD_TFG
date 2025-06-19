@@ -25,19 +25,19 @@ export const meetingRouter = ({ MeetingModel }) => {
     const identifier = "/:id";
     const unavailableDates = "/unavailable-dates";
     // GET api/meeting/
-    meetingRouter.get(`${ednpointName}`, [requestMiddleware], meetingController.getAllMeetings);
+    meetingRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], meetingController.getAllMeetings);
     // GET-UNAVAILABLE-DATES --> /api/meeting/unavailable-dates
-    meetingRouter.get(`${unavailableDates}`, [requestMiddleware], meetingController.getMeetingUnavailableDates);
+    meetingRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], meetingController.getMeetingUnavailableDates);
     // GET-ID api/meeting/:id
-    meetingRouter.get(`${identifier}`, [requestMiddleware], meetingController.getMeetingById);
+    meetingRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.getMeetingById);
     // POST api/meeting/
-    meetingRouter.post(`${ednpointName}`, [requestMiddleware], meetingController.postNewMeeting);
+    meetingRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], meetingController.postMeeting);
     // PUT
-    meetingRouter.put(`${identifier}`, [requestMiddleware], meetingController.putUpdateMeeting);
+    meetingRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.putMeeting);
     // PATCH
-    meetingRouter.patch(`${identifier}`, [requestMiddleware], meetingController.patchUpdateMeeting);
+    meetingRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.patchMeeting);
     // DELETE
-    meetingRouter.delete(`${identifier}`, [requestMiddleware], meetingController.deleteMeeting);
+    meetingRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.deleteMeeting);
     // Devolvemos la configuración del router.
     return meetingRouter;
 }

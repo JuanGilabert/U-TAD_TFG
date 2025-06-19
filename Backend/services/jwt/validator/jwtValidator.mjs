@@ -1,4 +1,4 @@
-// Modulos
+// Modulos de node
 import pkg from 'jsonwebtoken';
 const { verify } = pkg;
 import { promisify } from 'util';
@@ -9,12 +9,9 @@ import { JWT_SECRET_KEY } from '../../../utils/export/GenericEnvConfig.mjs';
 ////
 export const jwtValidator = (token) => {
     try {
-        const { userEmail } = verify(token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
-        return userEmail;
+        const { userEmail, userRole } = verify(token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
+        return { userEmail, userRole };
     } catch {
         return null;
     }
 };
-export const jwtValidatorOld = (token) => verify(token, JWT_SECRET_KEY, { algorithms: ['HS256'] })
-    .then(({ userEmail }) => userEmail)// Devolvemos la propiedad creada en el payload del token(userEmail) cuando se genera.
-    .catch(() => null);
