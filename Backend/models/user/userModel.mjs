@@ -1,25 +1,26 @@
 // Modulos de node.
-import { randomUUID } from 'node:crypto';
 import { hash, genSalt } from 'bcrypt';
+import { randomUUID } from 'node:crypto';
 // Modulos locales.
 import { connectDB } from '../../services/database/connection/mongoDbConnection.mjs';
-import { AUTH_COLLECTION_NAME, ADMIN_ROLE_PASSWORD, HASH_SALT_ROUNDS } from '../../utils/export/GenericEnvConfig.mjs';
-import { checkIfUserEmailExistsFunction } from '../../services/database/functions/checkIfUserEmailExistsFunction.mjs';
+import { checkIfUserExistsFunction } from '../../services/database/functions/mongoDbFunctions.mjs';
+import { USER_COLLECTION_NAME, ADMIN_ROLE_PASSWORD, HASH_SALT_ROUNDS, RETURN_DOCUMENT_AFTER_VALUE } from '../../config/GenericEnvConfig.mjs';
+import { act } from 'react';
 //// Exportamos la clase.
 export class UserModel {
     // Funcion asincrona para obtener todos los usuarios.
     static async getAllUsers() {
         const db = await connectDB();
-        const users = await db.collection(AUTH_COLLECTION_NAME).find({}).toArray();
+        const users = await db.collection(USER_COLLECTION_NAME).find({}).toArray();
         return users || false;
     }
     // Funcion asincrona para obtener un usuario por su id.
     static async getUserById(userId, userRole = "user") {
         const db = await connectDB();
         let user = "";
-        if (userRole === "admin") user = await db.collection(AUTH_COLLECTION_NAME).findOne({ _id: userId });
-        else user = await db.collection(AUTH_COLLECTION_NAME).findOne(
-            { _id: userId }, { projection: { userRole: 0, userJWT: 0 } }
+        if (userRole === "admin") user = await db.collection(USER_COLLECTION_NAME).findOne({ _id: userId });
+        else user = await db.collection(USER_COLLECTION_NAME).findOne(
+            { _id: userId }, { projection: { userRole: 0, userJWT: 0, userActive: 0 } }
         );
         return user || false;
     }
@@ -27,23 +28,23 @@ export class UserModel {
     static async postUser({ userName, userPassword, userEmail }) {
         const db = await connectDB();
         // Comprobamos que no exista el email para poder registrar al usuario. Si existe, devolvemos un error.
-        const userEmailExists = await checkIfUserEmailExistsFunction(userEmail);
-        if (userEmailExists) return { type: "Email", message: "El email indicado ya existe." };
+        const userEmailExists = await checkIfUserExistsFunction(userEmail);
+        if (userEmailExists) return { type: "Email", message: "El email indicado ya existe. Introduzca otro distinto." };
         try {
             // Rezlizamos el hash de la contraseña recibida con el salt correspondiente.
             const saltRounds = await genSalt(HASH_SALT_ROUNDS);
             const hashedPassword = await hash(userPassword, saltRounds);
             // Verificamos si la contraseña contiene la validacion para tener rol de admin o no.
             const userRole = userPassword.includes(ADMIN_ROLE_PASSWORD) ? "admin" : "user";
+            const userAcountIsActive = userRole === "admin" ? true : false;
             // Creamos el nuevo usuario con los valores correspondientes.
-            const newUser = { _id: randomUUID(), userName, userPassword: hashedPassword, userEmail, userRole, userJWT: "" };
+            const newUser = { _id: randomUUID(), userName, userPassword: hashedPassword, userEmail, userRole, userJWT: "", userActive: userAcountIsActive };
             // Guardamos el nuevo usuario.
-            const { acknowledged, insertedId } = await db.collection(AUTH_COLLECTION_NAME).insertOne(newUser);
+            const { acknowledged, insertedId } = await db.collection(USER_COLLECTION_NAME).insertOne(newUser);
             //if (!acknowledged) throw new Error('La operación de inserción no fue reconocida por MongoDB.');
-            return !acknowledged ? false : { id: insertedId, ...newUser };
+            return !acknowledged ? { type: "Error", message: "Error al crear la el usuario." } : { id: insertedId, ...newUser };
         } catch (error) {
             console.error("Error creating user: ", error);
-            //return { type: "Error", message: error };
             throw new Error(`No se pudo insertar el usuario en la base de datos: ${error}`);
         }
     }
@@ -58,9 +59,9 @@ export class UserModel {
             _id: id
         };
         // Obtenemos el resultado de la operación de actualización.
-        const { value, lastErrorObject, ok } = await db.collection(AUTH_COLLECTION_NAME).findOneAndReplace(
+        const { value, lastErrorObject, ok } = await db.collection(USER_COLLECTION_NAME).findOneAndReplace(
             { _id: id }, updatedUser,
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userRole: 0, userJWT: 0 } }
+            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userRole: 0, userJWT: 0, confirmed: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la tarea: ${lastErrorObject}`);
@@ -73,7 +74,7 @@ export class UserModel {
     static async patchUser({ id, user }) {
         const db = await connectDB();
         // Obtenemos el resultado de la operación de actualización.
-        const { value, lastErrorObject, ok } = await db.collection(AUTH_COLLECTION_NAME).findOneAndUpdate(
+        const { value, lastErrorObject, ok } = await db.collection(USER_COLLECTION_NAME).findOneAndUpdate(
             { _id: id }, { $set: { ...user } },
             { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userRole: 0, userJWT: 0 } }
         );
@@ -90,6 +91,6 @@ export class UserModel {
         // Comprobamos si la respuesta es distinto de null. Si es asi indica que se elimino el usuario con el id recibido.
         // Si es null, indica que no se elimino el usuario con el id recibido debido a
         // (ver si es un error de red o sintactico o si de verdad no existe para saber que devolver en el controlador)
-        return (await db.collection(AUTH_COLLECTION_NAME).findOneAndDelete({ _id: id })) !== null;        
+        return (await db.collection(USER_COLLECTION_NAME).findOneAndDelete({ _id: id })) !== null;        
     }
 }

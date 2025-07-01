@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateSport, validatePartialSport } from '../../models/sport/sportModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class SportController {
     constructor({ model }) { 
         this.model = model
@@ -19,16 +17,10 @@ export class SportController {
     }
     //
     getAllSports = async (req, res) => {
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (fechaInicioActividad !== "hasNoValue") result = await validatePartialSport({ fechaInicioActividad });
-        if (duracionActividadMinutos !== "hasNoValue") result = await validatePartialSport({ duracionActividadMinutos });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const {
-            fechaInicioActividad = "hasNoValue",
-            duracionActividadMinutos = "hasNoValue"
+            fechaInicioActividad = "hasNoValue", duracionActividadMinutos = "hasNoValue"
         } = req.query;
         // Obtenemos del modelo los datos requeridos.
         try {
@@ -76,13 +68,11 @@ export class SportController {
         }
     }
     postSport = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateSport(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postSportModelResponse = await this.model.postSport({ sport: result.data, userId });
+            const postSportModelResponse = await this.model.postSport({ sport: req.body, userId });
             if (postSportModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error.
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE}. Error al crear la actividad.` });
@@ -92,15 +82,12 @@ export class SportController {
         }
     }
     putSport = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateSport(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putSportModelResponse = await this.model.putSport({ id, sport: result.data, userId });
+            const putSportModelResponse = await this.model.putSport({ id, sport: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putSportModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -110,15 +97,12 @@ export class SportController {
         }
     }
     patchSport = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialSport(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchSportModelResponse = await this.model.patchSport({ id, sport: result.data, userId });
+            const patchSportModelResponse = await this.model.patchSport({ id, sport: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchSportModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchSportModelResponse);

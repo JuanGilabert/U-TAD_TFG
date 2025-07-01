@@ -2,7 +2,7 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 // Modulos locales
 //import { mongoConnectionUrl } from '../config/dbConnectionData.js';
-import { MONGODB_URI, DB_NAME } from '../../../utils/export/GenericEnvConfig.mjs';
+import { MONGODB_URI, DB_NAME } from '../../../config/GenericEnvConfig.mjs';
 // MongoDB Atlas URI
 const client = new MongoClient(MONGODB_URI, {
     serverApi: ServerApiVersion.v1,
@@ -24,13 +24,12 @@ let connectionPromise;
  */
 export async function connectDB() {
     if (!connectionPromise) {
-        connectionPromise = await client.connect()
-            .then(() => client.db(DB_NAME))
-            .catch((err) => {
-                connectionPromise = null; // reset on failure
-                console.error("Error connecting to MongoDB:", err);
-                throw err;
-            });
+        connectionPromise = await client.connect().then(() => client.db(DB_NAME))
+        .catch((err) => {
+            connectionPromise = null;// reset on failure
+            console.error("Error connecting to MongoDB:", err);
+            throw err;
+        });
     }
     return connectionPromise;
 }
@@ -53,7 +52,7 @@ export async function closeDbConnection() {
             throw error;
         }
     } else {
-        console.error("No active MongoDB connection to close.");
+        console.error("No active MongoDB-connection to close.");
     }
 }
 // Getter para saber si la conexion con la base de datos esta abierta, es decir si tiene algun valor.

@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 // Modulos locales
 import { connectDB } from '../../../services/database/connection/mongoDbConnection.mjs';
-import { PAINTING_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../../utils/export/GenericEnvConfig.mjs';
+import { PAINTING_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class PaintingModel {
     static async getAllPaintings(userId, fechaInicioExposicionArte) {
@@ -82,7 +82,7 @@ export class PaintingModel {
         }
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(PAINTING_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newPainting, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newPainting, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la exposicion: ${lastErrorObject}`);
@@ -96,7 +96,7 @@ export class PaintingModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(PAINTING_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...painting, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la exposicion: ${lastErrorObject}`);

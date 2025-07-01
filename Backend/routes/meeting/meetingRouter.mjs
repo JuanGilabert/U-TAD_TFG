@@ -1,8 +1,9 @@
-// Importamos modulos de node.
-import { Router } from 'express';
-// Importamos el middleware de las request y los controladores.
-import { requestMiddleware } from '../../middlewares/requestMiddleware.mjs';
+// Importamos el generador de routers.
+import { expressRouterGenerator } from '../../utils/functions/expressRouterGeneratorFunction.mjs';
+// Importamos los controladores
 import { MeetingController } from '../../controllers/meeting/meetingController.mjs';
+// Importamos los valores de las rutas/endpoints necesarios.
+import { EVENT_ROUTE_PATH, IDENTIFIER_ROUTE_PATH, UNAVAILABLE_DATES_ROUTE_PATH } from '../../config/GenericEnvConfig.mjs';
 /** meetingRouter.
  * 
  * @param {Object} { MeetingModel } - Objeto que contiene el modelo MeetingModel.
@@ -18,26 +19,38 @@ import { MeetingController } from '../../controllers/meeting/meetingController.m
  * - DELETE /meeting/:id - Elimina un registro de Meeting.
  */
 export const meetingRouter = ({ MeetingModel }) => {
-    const meetingRouter = Router();
+    const meetingRouter = expressRouterGenerator();
     const meetingController = new MeetingController({ model: MeetingModel });
     /* Meeting */
-    const ednpointName = "/";
-    const identifier = "/:id";
-    const unavailableDates = "/unavailable-dates";
-    // GET api/meeting/
-    meetingRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], meetingController.getAllMeetings);
-    // GET-UNAVAILABLE-DATES --> /api/meeting/unavailable-dates
-    meetingRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], meetingController.getMeetingUnavailableDates);
-    // GET-ID api/meeting/:id
-    meetingRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.getMeetingById);
-    // POST api/meeting/
-    meetingRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], meetingController.postMeeting);
+    // GET /api/meeting/event
+    meetingRouter.get(`${EVENT_ROUTE_PATH}`, meetingController.getAllMeetings);
+    // GET-UNAVAILABLE-DATES --> /api/meeting/event/unavailable-dates
+    meetingRouter.get(
+        `${EVENT_ROUTE_PATH}${UNAVAILABLE_DATES_ROUTE_PATH}`,
+        meetingController.getMeetingUnavailableDates
+    );
+    // GET-ID /api/meeting/event/:id
+    meetingRouter.get(
+        `${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        meetingController.getMeetingById)
+        ;
+    // POST
+    meetingRouter.post(`${EVENT_ROUTE_PATH}`, meetingController.postMeeting);
     // PUT
-    meetingRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.putMeeting);
+    meetingRouter.put(
+        `${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        meetingController.putMeeting
+    );
     // PATCH
-    meetingRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.patchMeeting);
+    meetingRouter.patch(
+        `${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        meetingController.patchMeeting
+    );
     // DELETE
-    meetingRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], meetingController.deleteMeeting);
+    meetingRouter.delete(
+        `${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        meetingController.deleteMeeting
+    );
     // Devolvemos la configuración del router.
     return meetingRouter;
 }

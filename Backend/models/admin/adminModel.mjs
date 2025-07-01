@@ -1,10 +1,10 @@
 // Modulos de node.
 import { hash, genSalt, compare } from 'bcrypt';
 // Modulos locales.
-import { connectDB, closeDbConnection } from '../../services/database/connection/mongoDbConnection.mjs';
 import { jwtGenerator } from '../../services/jwt/generator/jwtGenerator.mjs';
-import { AUTH_COLLECTION_NAME, HASH_SALT_ROUNDS, RETURN_DOCUMENT_VALUE } from '../../utils/export/GenericEnvConfig.mjs';
-import { checkIfUserEmailExistsFunction } from '../../services/database/functions/checkIfUserEmailExistsFunction.mjs';
+import { connectDB, closeDbConnection } from '../../services/database/connection/mongoDbConnection.mjs';
+import { checkIfUserExistsFunction } from '../../services/database/functions/mongoDbFunctions.mjs';
+import { USER_COLLECTION_NAME, HASH_SALT_ROUNDS, RETURN_DOCUMENT_VALUE } from '../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class AdminModel {
     // Funcion asincrona para loguear a un usuario
@@ -12,7 +12,7 @@ export class AdminModel {
         const db = await connectDB();
         let token = "";
         let hashedToken = "";
-        const user = await checkIfUserEmailExistsFunction(userEmail, { returnUser: true });
+        const user = await checkIfUserExistsFunction(userEmail, { returnUser: true });
         if (!user) return { message: "Invalid input." };
         try {
             const isPasswordValid = await compare(userPassword, user.userPassword);
@@ -27,7 +27,7 @@ export class AdminModel {
             return { message: "Login error." };
         }
         // Guardamos el JWT en la base de datos asociado al usuario en la propiedad userJWT.
-        const value = await db.collection(AUTH_COLLECTION_NAME).findOneAndUpdate(
+        const value = await db.collection(USER_COLLECTION_NAME).findOneAndUpdate(
             { _id: user._id }, { $set: { userJWT: token } }, { returnDocument: RETURN_DOCUMENT_VALUE }
         );
         // Devolvemos el error obtenido al intentar loguear al usuario.
@@ -41,7 +41,7 @@ export class AdminModel {
         // Hasheamos el token generado. VERIFICAR SI ESTO PUEDE GENERAR PROBLEMAS PARA LA EXTRACCION DE LA INFORMACION DEL USUARIO.
         //const saltRounds = await genSalt(HASH_SALT_ROUNDS);
         //let hashedUserJWT = await hash(token, saltRounds);
-        const value = await db.collection(AUTH_COLLECTION_NAME).findOneAndUpdate({ userJWT: userJWT }, { $set: { userJWT: "" } });
+        const value = await db.collection(USER_COLLECTION_NAME).findOneAndUpdate({ userJWT: userJWT }, { $set: { userJWT: "" } });
         // Devolvemos el error obtenido al intentar cerrar la sesion.
         if (!value) return false;
         // Cerramos la conexion con la base de datos.

@@ -1,4 +1,4 @@
-import { createApp } from "../../taskManagerServer.mjs";
+import { createApp } from "../server/taskManagerServer.mjs";
 // Importamos los modelos para inyectarlos en la aplicacion.
 import { CinemaModel } from './models/artModels/cinemaModel/cinemaModel.mjs';
 import { MusicModel } from './models/artModels/musicModel/musicModel.mjs';

@@ -1,5 +1,5 @@
 import * as net from 'node:net';
-//
+// Exportamos la funcion que busca un puerto disponible para el servidor.
 export async function findAvailablePort(desirePort) {
     const server = net.createServer();
     return new Promise((resolve, reject) => {

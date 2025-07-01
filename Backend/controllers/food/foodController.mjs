@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateFood, validatePartialFood } from '../../models/food/foodModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class FoodController {
     constructor({ model }) {
         this.model = model;
@@ -22,11 +20,6 @@ export class FoodController {
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const { tipoComida = "hasNoValue", fechaReserva = "hasNoValue" } = req.query;
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (tipoComida !== "hasNoValue") result = await validatePartialFood({ tipoComida });
-        if (fechaReserva !== "hasNoValue") result = await validatePartialFood({ fechaReserva });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos del modelo los datos requeridos.
         try {
             const getAllFoodsModelResponse = await this.model.getAllFoods(userId, tipoComida, fechaReserva);
@@ -42,7 +35,6 @@ export class FoodController {
             // Enviamos el error obtenido.
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
-        return res.status(200).json(getAllFoodsModelResponse);
     }
     getFoodById = async (req, res) => {
         // Obtenemos los valores de la peticion.
@@ -76,13 +68,11 @@ export class FoodController {
         }
     }
     postFood = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateFood(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postNewFoodModelResult = await this.model.postFood({ food: result.data, userId });
+            const postNewFoodModelResult = await this.model.postFood({ food: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (postNewFoodModelResult) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -93,15 +83,12 @@ export class FoodController {
         }
     }
     putFood = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateFood(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putFoodModelResponse = await this.model.putFood({ id, food: result.data, userId });
+            const putFoodModelResponse = await this.model.putFood({ id, food: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putFoodModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -111,15 +98,12 @@ export class FoodController {
         }
     }
     patchFood = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialFood(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchFoodModelRespnse = await this.model.patchFood({ id, food: result.data, userId });
+            const patchFoodModelRespnse = await this.model.patchFood({ id, food: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchFoodModelRespnse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchFoodModelRespnse);

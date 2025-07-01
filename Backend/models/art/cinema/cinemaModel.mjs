@@ -2,11 +2,12 @@
 import { randomUUID } from 'node:crypto';
 // Modulos locales.
 import { connectDB } from '../../../services/database/connection/mongoDbConnection.mjs';
-import { CINEMA_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../../utils/export/GenericEnvConfig.mjs';
+import { CINEMA_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class CinemaModel {
     static async getAllCinemas(userId, fechaInicioPelicula, duracionPeliculaMinutos) {
         const db = await connectDB();
+        const duracionNumber = Number(duracionPeliculaMinutos);// hasNoValue = NaN
         // Verificamos que existen documentos en la coleccion relativos al usuario logueado mediante su id(userId).
         // Si no existen documentos devolvemos null para que se devuelva un 404 en el controlador.
         if (!(await db.collection(CINEMA_COLLECTION_NAME).findOne({ userId }))) return null;
@@ -25,7 +26,7 @@ export class CinemaModel {
                 {
                     userId: userId,
                     fechaInicioPelicula: { $gte: startDate, $lt: endDate },
-                    duracionPeliculaMinutos: duracionPeliculaMinutos
+                    duracionPeliculaMinutos: duracionNumber
                 },
                 { projection: { userId: 0 } }
             ).toArray();
@@ -41,7 +42,7 @@ export class CinemaModel {
         }
         if(duracionPeliculaMinutos !== "hasNoValue") {
             const cinemas = await db.collection(CINEMA_COLLECTION_NAME).find(
-                { userId: userId, duracionPeliculaMinutos: duracionPeliculaMinutos },
+                { userId: userId, duracionPeliculaMinutos: duracionNumber },
                 { projection: { userId: 0 } }
             ).toArray();
             return cinemas.length ? cinemas : false;
@@ -102,7 +103,7 @@ export class CinemaModel {
         };
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(CINEMA_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newCinema, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newCinema, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la actividad: ${lastErrorObject}`);
@@ -116,7 +117,7 @@ export class CinemaModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(CINEMA_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...cinema, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la actividad: ${lastErrorObject}`);

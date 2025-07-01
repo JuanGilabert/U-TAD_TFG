@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas
-import { validateMedicament, validatePartialMedicament } from '../../models/health/medicament/medicamentModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class HealthMedicamentController {
     constructor({ model }) { this.model = model;
         this.getAllMedicaments = this.getAllMedicaments.bind(this);
@@ -18,10 +16,6 @@ export class HealthMedicamentController {
     }
     //
     getAllMedicaments = async (req, res) => {
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (fechaCaducidadMedicamento !== "hasNoValue") result = await validatePartialMedicament({ fechaCaducidadMedicamento });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const { fechaCaducidadMedicamento = "hasNoValue" } = req.query;
@@ -73,13 +67,11 @@ export class HealthMedicamentController {
         }
     }
     postMedicament = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMedicament(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const apiPostNewMedicamentResponse = await this.model.postMedicament({ medicament: result.data, userId });
+            const apiPostNewMedicamentResponse = await this.model.postMedicament({ medicament: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (apiPostNewMedicamentResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -90,15 +82,12 @@ export class HealthMedicamentController {
         }
     }
     putMedicament = async (req, res) => {
-        // Validaciones del objeto a insertar.
-        const result = await validateMedicament(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putMedicamentModelResponse = await this.model.putMedicament({ id, medicament: result.data, userId });
+            const putMedicamentModelResponse = await this.model.putMedicament({ id, medicament: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putMedicamentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -108,15 +97,12 @@ export class HealthMedicamentController {
         }
     }
     patchMedicament = async (req, res) => {
-        // Validaciones del objeto a actualizar.
-        const result = await validatePartialMedicament(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchMedicamentModelResponse = await this.model.patchMedicament({ id, medicament: result.data, userId });
+            const patchMedicamentModelResponse = await this.model.patchMedicament({ id, medicament: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchMedicamentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchMedicamentModelResponse);

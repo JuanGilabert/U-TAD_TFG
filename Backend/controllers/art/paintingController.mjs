@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validatePainting, validatePartialPainting } from '../../models/art/painting/paintingModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class PaintingController {
     constructor({ model }) {
         this.model = model;
@@ -22,11 +20,6 @@ export class PaintingController {
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const { fechaInicioExposicionArte = "hasNoValue", fechaFinExposicionArte = "hasNoValue" } = req.query;
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (fechaInicioExposicionArte !== "hasNoValue") result = await validatePartialPainting({ fechaInicioExposicionArte });
-        if (fechaFinExposicionArte !== "hasNoValue") result = await validatePartialPainting({ fechaFinExposicionArte });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos del modelo los datos requeridos.
         try {
             const getAllPaintingsModelResponse = await this.model.getAllPaintings(
@@ -77,13 +70,11 @@ export class PaintingController {
         }
     }
     postPainting = async (req, res) => {
-        // Validamos que el cuerpo de la peticion sea valido.
-        const result = await validatePainting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postNewPaintingModelResponse = await this.model.postPainting({ painting: result.data, userId });
+            const postNewPaintingModelResponse = await this.model.postPainting({ painting: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (postNewPaintingModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -94,15 +85,12 @@ export class PaintingController {
         }
     }
     putPainting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePainting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putPaintingModelResponse = await this.model.putPainting({ id, painting: result.data, userId });
+            const putPaintingModelResponse = await this.model.putPainting({ id, painting: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putPaintingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -112,15 +100,12 @@ export class PaintingController {
         }
     }
     patchPainting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialPainting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchPaintingModelResponse = await this.model.patchPainting({ id, painting: result.data, userId });
+            const patchPaintingModelResponse = await this.model.patchPainting({ id, painting: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchPaintingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchPaintingModelResponse);

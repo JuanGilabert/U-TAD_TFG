@@ -1,13 +1,10 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
 import { get } from 'node:http';
-import { validateMusic, validatePartialMusic } from '../../models/art/music/musicModelValidator.mjs';
-import { findUserIdByEmailFunction } from '../../services/database/functions/findUserIdByEmailFunction.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
-    BAD_REQUEST_400_MESSAGE, NOT_FOUND_404_MESSAGE, UNPROCESSABLE_ENTITY_422_MESSAGE,
+    BAD_REQUEST_400_MESSAGE, NOT_FOUND_404_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class MusicController {
     constructor({ model }) {
         this.model = model;
@@ -74,14 +71,12 @@ export class MusicController {
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    postMusic = async (req, res) => { //CON-OK MOD-OK
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMusic(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+    postMusic = async (req, res) => { //REV-OK MOD-OK
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const modelPostNewMusicResponse = await this.model.postMusic({ music: result.data, userId });
+            const modelPostNewMusicResponse = await this.model.postMusic({ music: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (modelPostNewMusicResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido. La operación de inserción no fue reconocida por MongoDB.
@@ -91,16 +86,13 @@ export class MusicController {
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error.message || error}` });
         }
     }
-    putMusic = async (req, res) => {//CON-OK MOD-OK
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMusic(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
+    putMusic = async (req, res) => {//REV-OK MOD-OK
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putMusicModelResponse = await this.model.putMusic({ id, music: result.data, userId });
+            const putMusicModelResponse = await this.model.putMusic({ id, music: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putMusicModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -109,16 +101,13 @@ export class MusicController {
             return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${error}` });
         }
     }
-    patchMusic = async (req, res) => {//CON-OK MOD-OK
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialMusic(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
+    patchMusic = async (req, res) => {//REV-OK MOD-OK
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchMusicModelResponse = await this.model.patchMusic({ id, music: result.data, userId });
+            const patchMusicModelResponse = await this.model.patchMusic({ id, music: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchMusicModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchMusicModelResponse);
@@ -144,12 +133,9 @@ export class MusicController {
         }
     }
     postMusicVideoDownload = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMusicVideoDownload(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos del modelo los datos requeridos.
         try {
-            const getMusicVideoDownloadByUrlModelResponse = await this.model.postMusicVideoDownload({ videoData: result.data });
+            const getMusicVideoDownloadByUrlModelResponse = await this.model.postMusicVideoDownload({ videoData: req.body });
             // Enviamos el error.
             if (getMusicVideoDownloadByUrlModelResponse?.type === "Warning")
                 return res.status(404).json({ message: NOT_FOUND_404_MESSAGE });

@@ -1,5 +1,5 @@
 // 
-import { BAD_REQUEST_400_MESSAGE, BAD_REQUEST_400_QUERY_MESSAGE } from '../utils/export/GenericEnvConfig.mjs';
+import { BAD_REQUEST_400_MESSAGE, BAD_REQUEST_400_QUERY_MESSAGE } from '../config/GenericEnvConfig.mjs';
 // Expresion regular para validar si el id recibido cumple con el formato correcto.
 import { randomUUIDv4Regex } from '../utils/export/GenericRegex.mjs';
 //
@@ -34,8 +34,6 @@ export async function requestMiddleware(req, res, next) {
     if (!checkParamsFunction(req.params.id)) return res.status(400).json({ message: BAD_REQUEST_400_MESSAGE });
   }
   if (req.method === 'DELETE') {
-    // Verificamos que no haya queries en la peticion.
-    if (Object.keys(req.query).length > 0) return res.status(400).json({ message: BAD_REQUEST_400_QUERY_MESSAGE });
     // Verificamos que no exista cuerpo en la peticion.
     if (req.body) return res.status(400).json({ message: BAD_REQUEST_400_MESSAGE });
     // Validaciones de los parametros recibidos.
@@ -44,10 +42,6 @@ export async function requestMiddleware(req, res, next) {
   //if (req.method === 'OPTIONS' || req.method === 'HEAD') return next();
   // Continuamos con el siguiente handler en la cola.
   next();
-  return;
 }
-function checkParamsFunction(id) {
-  // Validamos que el id sea valido, es decir que el id sea un string randomUUID de version 4.
-  if (!id || !randomUUIDv4Regex.test(id)) return false;
-  return true;
-}
+// Validamos que el id sea valido, es decir que el id sea un string randomUUID de version 4.
+function checkParamsFunction(id) { return !(!id || !randomUUIDv4Regex.test(id)); }

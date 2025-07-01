@@ -35,7 +35,10 @@ def video_downloader(videoURL, videoExtensionFormat, videoDownloadsDirectory = "
         # Validar si el video está disponible. Evitamos que los videos duren mas de 10 minutos(10 minutos son 600 segundos).
         if yt.length > 600: raise ValueError("El video es demasiado largo. Solo se permiten videos de hasta 10 minutos(600 segundos).")
         # Descargamos el video en la ruta indicada con el formato indicado. Python descarga el archivo en el servidor → se guarda físicamente.
-        ruta_archivo = yt.streams.filter(progressive=True, file_extension=videoExtensionFormat).first().download(output_path=videoDownloadsDirectory)
+        ruta_archivo = yt.streams.filter(
+            progressive=True, file_extension=videoExtensionFormat
+        ).order_by('resolution').desc().first().download(output_path=videoDownloadsDirectory)
+        #print(f"Nombre del archivo descargado: {os.path.basename(ruta_archivo)}")
         # Imprimimos la ruta del archivo descargado. Forzamos que el texto debe ir a la salida estándar (stdout).
         print(f"SUCCESS: {ruta_archivo}", file=sys.stdout);
     except VideoPrivate as video_private_err:

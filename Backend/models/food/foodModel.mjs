@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 // Modulos locales.
 import { connectDB } from '../../services/database/connection/mongoDbConnection.mjs';
-import { FOOD_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../utils/export/GenericEnvConfig.mjs';
+import { FOOD_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class FoodModel {
     static async getAllFoods(userId, tipoComida, fechaReserva) {
@@ -96,7 +96,7 @@ export class FoodModel {
         };
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(FOOD_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newFood, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newFood, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la comida: ${lastErrorObject}`);
@@ -110,7 +110,7 @@ export class FoodModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(FOOD_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...food, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la comida: ${lastErrorObject}`);

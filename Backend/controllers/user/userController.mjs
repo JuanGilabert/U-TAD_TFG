@@ -1,11 +1,11 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateUser, validatePartialUser } from '../../models/user/userModelValidator.mjs';
+// Importamos los hooks necesarios como el hook despues de registrar un usuario.
+import { afterUserRegister } from '../../hooks/afterUserRegisterHook.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     FORBIDDEN_403_MESSAGE, CONFLICT_409_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase UserController
 export class UserController { // HAY QUE REVISAR TODOS LOS ERRORES QUE SE DEVUELVEN AQUI. SEE: MODELO. REALIZAR ANTES DE NADA EL JSDoc.
     constructor({ model }) {
@@ -53,21 +53,15 @@ export class UserController { // HAY QUE REVISAR TODOS LOS ERRORES QUE SE DEVUEL
     }
     // Funcion asincrona para registrar/crear un nuevo usuario.
     postUser = async (req, res) => {
-        console.log(req.body);
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateUser(req.body);
-        console.log(result);
-        if (result.error) return res.status(422).json({ error: result.error.message });
         // Obtenemos del modelo los datos requeridos.
         try {
-            const registerUserModelResponse = await this.model.postUser(result.data);
-            // Enviamos el error obtenido. La operación de inserción no fue reconocida por MongoDB.
-            if (!registerUserModelResponse)
-                return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} Error al crear la el usuario.` });
+            const registerUserModelResponse = await this.model.postUser(req.body);
             // Si el email existe devolvemos un error(conflict).
             if (registerUserModelResponse?.type === "Email")
                 return res.status(409).json({ message: `${CONFLICT_409_MESSAGE} ${registerUserModelResponse?.message}` });
-            console.log(registerUserModelResponse);
+            // Enviamos el error obtenido. La operación de inserción no fue reconocida por MongoDB.
+            if (registerUserModelResponse?.type === "Error")
+                return res.status(500).json({ message: `${INTERNAL_SERVER_ERROR_500_MESSAGE} ${registerUserModelResponse?.message}` });
             // Enviamos la respuesta obtenida.
             return res.status(201).json({ message: CREATED_201_MESSAGE });
         } catch (error) {

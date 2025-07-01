@@ -5,8 +5,8 @@ dotenv.config();
 // Modulos locales.
 import { connectDB, closeDbConnection, getConnectionPromise } from './services/database/connection/mongoDbConnection.mjs';
 import { findAvailablePort } from "./utils/functions/findAvailablePortFunction.mjs";
-import { SERVER_BIND_PORT } from './utils/export/GenericEnvConfig.mjs';
-import { app } from "./taskManagerServer.mjs";
+import { SERVER_BIND_PORT } from './config/GenericEnvConfig.mjs';
+import { app } from "./server/taskManagerServer.mjs";
 // Verificamos que el puerto sea valido.
 const isValidPort = !isNaN(SERVER_BIND_PORT) && SERVER_BIND_PORT > 0 && SERVER_BIND_PORT < 65536;
 const safePort = isValidPort ? SERVER_BIND_PORT : 2002;

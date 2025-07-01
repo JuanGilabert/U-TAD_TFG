@@ -1,43 +1,43 @@
-// Importamos modulos de node.
-import { Router } from 'express';
-// Importamos el middleware de las request y los controladores.
-import { requestMiddleware } from '../../middlewares/requestMiddleware.mjs';
+// Importamos el generador de routers.
+import { expressRouterGenerator } from '../../utils/functions/expressRouterGeneratorFunction.mjs';
+// Importamos los controladores necesarios para este router.
 import { TravelController } from '../../controllers/travel/travelController.mjs';
-/**
- * Creates and returns a router for handling travel-related API endpoints.
- *
- * The router provides the following endpoints:
- * - GET /api/travel/: Retrieves all travel records.
- * - GET /api/travel/:id: Retrieves a travel record by its unique identifier.
- * - POST /api/travel/: Creates a new travel record.
- * - PUT /api/travel/:id: s an entire travel record by its unique identifier.
- * - PATCH /api/travel/:id: s parts of a travel record by its unique identifier.
- * - DELETE /api/travel/:id: Deletes a travel record by its unique identifier.
- *
- * @param {Object} param0 - An object containing the TravelModel.
- * @returns {Router} An Express Router configured with travel endpoints.
- */
+// Importamos los valores de las rutas/endpoints necesarios para este router.
+import { TRAVEL_TRIP_ROUTE_PATH, UNAVAILABLE_DATES_ROUTE_PATH, IDENTIFIER_ROUTE_PATH } from '../../config/GenericEnvConfig.mjs';
+////
 export const travelRouter = ({ TravelModel }) => {
-    const travelRouter = Router();
+    const travelRouter = expressRouterGenerator();
     const travelController = new TravelController({ model: TravelModel });
     /* Travel */
-    const ednpointName = "/";
-    const identifier = "/:id";
-    const unavailableDates = "/unavailable-dates";
-    // GET api/travel/
-    travelRouter.get(`${ednpointName}`, [authMiddleware], [requestMiddleware], travelController.getAllTravels);
-    // GET-UNAVAILABLE-DATES --> /api/travel/unavailable-dates
-    travelRouter.get(`${unavailableDates}`, [authMiddleware], [requestMiddleware], travelController.getTravelDates);
-    // GET-ID api/travel/:id
-    travelRouter.get(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.getTravelById);
-    // POST api/travel/
-    travelRouter.post(`${ednpointName}`, [authMiddleware], [requestMiddleware], travelController.postTravel);
+    // GET /api/travel/trip
+    travelRouter.get(`${TRAVEL_TRIP_ROUTE_PATH}`, travelController.getAllTravels);
+    // GET-UNAVAILABLE-DATES --> /api/travel/trip/unavailable-dates
+    travelRouter.get(
+        `${TRAVEL_TRIP_ROUTE_PATH}${UNAVAILABLE_DATES_ROUTE_PATH}`,
+        travelController.getTravelDates
+    );
+    // GET-ID api/travel/trip/:id
+    travelRouter.get(
+        `${TRAVEL_TRIP_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        travelController.getTravelById
+    );
+    // POST /api/travel/trip
+    travelRouter.post(`${TRAVEL_TRIP_ROUTE_PATH}`, travelController.postTravel);
     // PUT
-    travelRouter.put(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.putTravel);
+    travelRouter.put(
+        `${TRAVEL_TRIP_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        travelController.putTravel
+    );
     // PATCH
-    travelRouter.patch(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.patchTravel);
+    travelRouter.patch(
+        `${TRAVEL_TRIP_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        travelController.patchTravel
+    );
     // DELETE
-    travelRouter.delete(`${identifier}`, [authMiddleware], [requestMiddleware], travelController.deleteTravel);
-    // DEvolvemos la configuración del router.
+    travelRouter.delete(
+        `${TRAVEL_TRIP_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`,
+        travelController.deleteTravel
+    );
+    // Devolvemos la configuración del router.
     return travelRouter;
 }

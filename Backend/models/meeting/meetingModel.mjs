@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 // Modulos locales
 import { connectDB } from '../../services/database/connection/mongoDbConnection.mjs';
-import { MEETING_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../utils/export/GenericEnvConfig.mjs';
+import { MEETING_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class MeetingModel {
     static async getAllMeetings(userId, fechaInicioReunion, fechaFinReunion) {
@@ -110,7 +110,7 @@ export class MeetingModel {
         };
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(MEETING_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newMeeting, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newMeeting, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la cita: ${lastErrorObject}`);
@@ -124,7 +124,7 @@ export class MeetingModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(MEETING_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...meeting, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la cita: ${lastErrorObject}`);

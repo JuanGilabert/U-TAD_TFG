@@ -1,14 +1,16 @@
-// Importamos modulos de node.
-import { Router } from 'express';
-// Importamos el middleware de las request y los controladores.
-import { authMiddleware } from '../../middlewares/authMiddleware.mjs';
-import { requestMiddleware } from '../../middlewares/requestMiddleware.mjs';
-import { cinemaRequestMiddleware } from '../../middlewares/cinemaRequestMiddleware.mjs';
-// Importamos los controladores
+// Importamos el generador de routers.
+import { expressRouterGenerator } from '../../utils/functions/expressRouterGeneratorFunction.mjs';
+// Importamos los controladores necesarios para este router.
 import { CinemaController } from '../../controllers/art/cinemaController.mjs';
-import { MusicController } from '../../controllers/art/artMusicController.mjs';
-import { PaintingController } from '../../controllers/art/artPaintingController.mjs';
-/** Configures and returns an Express router for handling art-related routes.s
+import { MusicController } from '../../controllers/art/musicController.mjs';
+import { PaintingController } from '../../controllers/art/paintingController.mjs';
+// Importamos los valores de las rutas/endpoints necesarios para este router.
+import { ART_CINEMA_ROUTE_PATH, ART_MUSIC_ROUTE_PATH, ART_PAINTING_ROUTE_PATH,
+    EVENT_ROUTE_PATH, ART_PAINTING_EXPOSURE_ROUTE_PATH, IDENTIFIER_ROUTE_PATH,
+    UNAVAILABLE_DATES_ROUTE_PATH, CINEMA_MOVIE_DOWNLOADER_ROUTE_PATH,
+    MUSIC_VIDEO_DOWNLOADER_ROUTE_PATH
+} from '../../config/GenericEnvConfig.mjs';
+/** Configures and returns an Express router for handling art-related routes.
  *
  * @param {Object} params - The parameters for configuring the router.
  * @param {Object} params.CinemaModel - The model for cinema resources.
@@ -17,68 +19,57 @@ import { PaintingController } from '../../controllers/art/artPaintingController.
  * @returns {Router} The configured Express router for art-related routes.
  */
 export const artRouter = ({ CinemaModel, MusicModel, PaintingModel }) => {
-    const artRoute = Router();
-    // Common constants
-    const identifier = "/:id";
-    const unavailableDates = "/unavailable-dates";
-    /* Cinema */
-    const cinemaEndpoint = "/cinema";
-    const cinemaMovieDownloaderType = "/movie-downloader";
+    const artRoute = expressRouterGenerator();
+    //// Cinema
     const artCinemaController = new CinemaController({ model: CinemaModel });
-    // GET /api/art/cinema/
-    artRoute.get(`${cinemaEndpoint}`, cinemaRequestMiddleware, artCinemaController.getAllCinemas);
-    // GET-UNAVAILABLE-DATES api/art/cinema/unavailable-dates
-    artRoute.get(`${cinemaEndpoint}${unavailableDates}`, cinemaRequestMiddleware, artCinemaController.getCinemaUnavailableDates);
-    // GET-ID api/art/cinema/:id
-    artRoute.get(`${cinemaEndpoint}${identifier}`, cinemaRequestMiddleware, artCinemaController.getCinemaById);
+    // GET /api/art/cinema/event
+    artRoute.get(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}`, artCinemaController.getAllCinemas);
+    // GET-UNAVAILABLE-DATES api/art/cinema/event/unavailable-dates
+    artRoute.get(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}${UNAVAILABLE_DATES_ROUTE_PATH}`, artCinemaController.getCinemaUnavailableDates);
+    // GET-ID api/art/cinema/event/:id
+    artRoute.get(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artCinemaController.getCinemaById);
     // POST
-    artRoute.post(`${cinemaEndpoint}`, cinemaRequestMiddleware, artCinemaController.postCinema);
+    artRoute.post(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}`, artCinemaController.postCinema);
     // PUT
-    artRoute.put(`${cinemaEndpoint}${identifier}`, cinemaRequestMiddleware, artCinemaController.putCinema);
+    artRoute.put(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artCinemaController.putCinema);
     // PATCH
-    artRoute.patch(`${cinemaEndpoint}${identifier}`, cinemaRequestMiddleware, artCinemaController.patchCinema);
+    artRoute.patch(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artCinemaController.patchCinema);
     // DELETE
-    artRoute.delete(`${cinemaEndpoint}${identifier}`, cinemaRequestMiddleware, artCinemaController.deleteCinema);
-    /* Music */
-    const musicEndpoint = '/music';
-    const musicEventType = '/event';
-    const musicVideoDownloaderType = '/video-downloader';
+    artRoute.delete(`${ART_CINEMA_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artCinemaController.deleteCinema);
+    //// Music
     const artMusicController = new MusicController({ model: MusicModel });
     // GET /api/art/music/event
-    artRoute.get(`${musicEndpoint}${musicEventType}`, [authMiddleware], [requestMiddleware], artMusicController.getAllMusics);
+    artRoute.get(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}`, artMusicController.getAllMusics);
     // GET-UNAVAILABLE-DATES api/art/music/event/unavailable-dates
-    artRoute.get(`${musicEndpoint}${musicEventType}${unavailableDates}`, [authMiddleware], [requestMiddleware], artMusicController.getMusicUnavailableDates);
+    artRoute.get(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}${UNAVAILABLE_DATES_ROUTE_PATH}`, artMusicController.getMusicUnavailableDates);
     // GET-ID api/art/music/event/:id
-    artRoute.get(`${musicEndpoint}${musicEventType}${identifier}`, [authMiddleware], [requestMiddleware], artMusicController.getMusicById);
+    artRoute.get(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artMusicController.getMusicById);
     // POST
-    artRoute.post(`${musicEndpoint}${musicEventType}`, [authMiddleware], [requestMiddleware], artMusicController.postMusic);
+    artRoute.post(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}`, artMusicController.postMusic);
     // PUT
-    artRoute.put(`${musicEndpoint}${musicEventType}${identifier}`, [authMiddleware], [requestMiddleware], artMusicController.putMusic);
+    artRoute.put(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artMusicController.putMusic);
     // PATCH
-    artRoute.patch(`${musicEndpoint}${musicEventType}${identifier}`, [authMiddleware], [requestMiddleware], artMusicController.patchMusic);
+    artRoute.patch(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artMusicController.patchMusic);
     // DELETE
-    artRoute.delete(`${musicEndpoint}${musicEventType}${identifier}`, [authMiddleware], [requestMiddleware], artMusicController.deleteMusic);
-    // GET /api/art/music/video-downloader -> En la query se enviara el formato del video y el directorio de descarga del video hasta revision del modelo.
-    artRoute.post(`${musicEndpoint}${musicVideoDownloaderType}`, [authMiddleware], [requestMiddleware], artMusicController.postMusicVideoDownload);
-    /** */
-    /* Painting */
-    const paintingEndpoint = '/painting';
-    const paintingExposureType = '/exposure';//exposicion
+    artRoute.delete(`${ART_MUSIC_ROUTE_PATH}${EVENT_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artMusicController.deleteMusic);
+    // POST /api/art/music/video-downloader
+    artRoute.post(`${ART_MUSIC_ROUTE_PATH}${MUSIC_VIDEO_DOWNLOADER_ROUTE_PATH}`, artMusicController.postMusicVideoDownload);
+    //// Painting
     const artPaintingController = new PaintingController({ model: PaintingModel });
     // GET /api/art/painting/exposure
-    artRoute.get(`${paintingEndpoint}${paintingExposureType}`, [authMiddleware], [requestMiddleware], artPaintingController.getAllPaintings);
+    artRoute.get(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}`, artPaintingController.getAllPaintings);
     // GET-UNAVAILABLE-DATES api/art/painting/exposure/unavailable-dates
-    artRoute.get(`${paintingEndpoint}${paintingExposureType}${unavailableDates}`, [authMiddleware], [requestMiddleware], artPaintingController.getPaintingUnavailableDates);
+    artRoute.get(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}${UNAVAILABLE_DATES_ROUTE_PATH}`, artPaintingController.getPaintingUnavailableDates);
     // GET-ID
-    artRoute.get(`${paintingEndpoint}${paintingExposureType}${identifier}`, [authMiddleware], [requestMiddleware], artPaintingController.getPaintingById);
+    artRoute.get(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artPaintingController.getPaintingById);
     // POST
-    artRoute.post(`${paintingEndpoint}${paintingExposureType}`, [authMiddleware], [requestMiddleware], artPaintingController.postNewPainting);
+    artRoute.post(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}`, artPaintingController.postPainting);
     // PUT
-    artRoute.put(`${paintingEndpoint}${paintingExposureType}${identifier}`, [authMiddleware], [requestMiddleware], artPaintingController.putPainting);
+    artRoute.put(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artPaintingController.putPainting);
     // PATCH
-    artRoute.patch(`${paintingEndpoint}${paintingExposureType}${identifier}`, [authMiddleware], [requestMiddleware], artPaintingController.patchPainting);
+    artRoute.patch(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artPaintingController.patchPainting);
     // DELETE
-    artRoute.delete(`${paintingEndpoint}${paintingExposureType}${identifier}`, [authMiddleware], [requestMiddleware], artPaintingController.deletePainting);
+    artRoute.delete(`${ART_PAINTING_ROUTE_PATH}${ART_PAINTING_EXPOSURE_ROUTE_PATH}${IDENTIFIER_ROUTE_PATH}`, artPaintingController.deletePainting);
     // Devolvemos la configuración del router.
     return artRoute;
 }

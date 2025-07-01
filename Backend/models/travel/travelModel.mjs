@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 // Modulos locales.
 import { connectDB } from '../../services/database/connection/mongoDbConnection.mjs';
-import { TRAVEL_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../utils/export/GenericEnvConfig.mjs';
+import { TRAVEL_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../config/GenericEnvConfig.mjs';
 //// Exportamos la clase.
 export class TravelModel {
     static async getAllTravels(userId, fechaSalidaViaje, fechaRegresoViaje) {
@@ -104,7 +104,7 @@ export class TravelModel {
         };
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(TRAVEL_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newTravel, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newTravel, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar el viaje: ${lastErrorObject}`);
@@ -118,7 +118,7 @@ export class TravelModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(TRAVEL_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...travel, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar el viaje: ${lastErrorObject}`);

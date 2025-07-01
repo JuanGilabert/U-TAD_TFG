@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateMeeting, validatePartialMeeting } from '../../models/meeting/meetingModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class MeetingController {
     constructor({ model }) { 
         this.model = model
@@ -19,11 +17,6 @@ export class MeetingController {
     }
     //
     getAllMeetings = async (req, res) => {
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (fechaInicioReunion !== "hasNoValue") result = await validatePartialMeeting({ fechaInicioReunion });
-        if (fechaFinReunion !== "hasNoValue") result = await validateMeeting({ fechaFinReunion });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const { fechaInicioReunion = "hasNoValue", fechaFinReunion = "hasNoValue" } = req.query;
@@ -73,13 +66,11 @@ export class MeetingController {
         }
     }
     postMeeting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMeeting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postNewMeetingModelResponse = await this.model.postMeeting({ meeting: result.data, userId });
+            const postNewMeetingModelResponse = await this.model.postMeeting({ meeting: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (postNewMeetingModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -90,15 +81,12 @@ export class MeetingController {
         }
     }
     putMeeting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateMeeting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putMeetingModelResponse = await this.model.putMeeting({ id, meeting: result.data, userId });
+            const putMeetingModelResponse = await this.model.putMeeting({ id, meeting: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putMeetingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -108,15 +96,12 @@ export class MeetingController {
         }
     }
     patchMeeting = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialMeeting(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchMeetingModelResponse = await this.model.patchMeeting({ id, meeting: result.data, userId });
+            const patchMeetingModelResponse = await this.model.patchMeeting({ id, meeting: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchMeetingModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchMeetingModelResponse);

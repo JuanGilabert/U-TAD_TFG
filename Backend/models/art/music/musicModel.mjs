@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'url';
 // Modulos locales.
 import { connectDB } from '../../../services/database/connection/mongoDbConnection.mjs';
-import { MUSIC_COLLECTION_NAME, RETURN_DOCUMENT_VALUE } from '../../../utils/export/GenericEnvConfig.mjs';
+import { MUSIC_COLLECTION_NAME, RETURN_DOCUMENT_AFTER_VALUE } from '../../../config/GenericEnvConfig.mjs';
 // Constantes locales
 const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
@@ -154,7 +154,7 @@ export class MusicModel {
         };
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(MUSIC_COLLECTION_NAME).findOneAndReplace(
-            { userId: userId, _id: id }, newMusic, { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { userId: userId, _id: id }, newMusic, { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la musica: ${lastErrorObject}`);
@@ -179,7 +179,7 @@ export class MusicModel {
         // Obtenemos el resultado de la operación de actualización.
         const { value, lastErrorObject, ok } = await db.collection(MUSIC_COLLECTION_NAME).findOneAndUpdate(
             { userId: userId, _id: id }, { $set: { ...music, userId: userId } },
-            { returnDocument: RETURN_DOCUMENT_VALUE, projection: { userId: 0 } }
+            { returnDocument: RETURN_DOCUMENT_AFTER_VALUE, projection: { userId: 0 } }
         );
         // Si ok es 0 devolvemos el error obtenido.
         if (!ok && lastErrorObject) throw new Error(`No se pudo actualizar la musica: ${lastErrorObject}`);

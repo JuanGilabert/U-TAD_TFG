@@ -1,11 +1,10 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateTravel, validatePartialTravel } from '../../models/travel/travelModelValidator.mjs';
-// Importamos los mensajes genericos.
+// Importamos los mensajes de respuesta para responder con los mismos a las peticiones.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
+////
 export class TravelController {
     constructor({ model }) { 
         this.model = model
@@ -72,13 +71,11 @@ export class TravelController {
         }
     }
     postTravel = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateTravel(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postTravelModelResponse = await this.model.postTravel({ travel: result.data, userId });
+            const postTravelModelResponse = await this.model.postTravel({ travel: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (postTravelModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -89,15 +86,12 @@ export class TravelController {
         }
     }
     putTravel = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateTravel(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putTravelModelResponse = await this.model.putTravel({ id, travel: result.data, userId });
+            const putTravelModelResponse = await this.model.putTravel({ id, travel: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putTravelModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -107,15 +101,12 @@ export class TravelController {
         }
     }
     patchTravel = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialTravel(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchTravelModelResponse = await this.model.patchTravel({ id, travel: result.data, userId });
+            const patchTravelModelResponse = await this.model.patchTravel({ id, travel: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchTravelModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchTravelModelResponse);

@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateMedicalAppointment, validatePartialMedicalAppointment } from '../../models/health/medicalAppointment/medicalAppointmentModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class HealthMedicalAppointmentController {
     constructor({ model }) {
         this.model = model;
@@ -19,11 +17,6 @@ export class HealthMedicalAppointmentController {
     }
     //
     getAllMedicalAppointments = async (req, res) => {
-        // Verificamos que los valores de la peticion sean validos.
-        let result = "";
-        if (fechaCitaMedica !== "hasNoValue") result = await validatePartialMedicalAppointment({ fechaCitaMedica });
-        if (tipoPruebaCitaMedica !== "hasNoValue") result = await validatePartialMedicalAppointment({ tipoPruebaCitaMedica });
-        if (result.error) return res.status(400).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { userId } = req.user;
         const { fechaCitaMedica = "hasNoValue", tipoPruebaCitaMedica = "hasNoValue" } = req.query;
@@ -77,13 +70,11 @@ export class HealthMedicalAppointmentController {
         }
     }
     postMedicalAppointment = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error
-        const result = await validateMedicalAppointment(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo de datos los datos requeridos.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const apiPostNewMedicalAppointmentResponse = await this.model.postMedicalAppointment({ medicalAppointment: result.data, userId });
+            const apiPostNewMedicalAppointmentResponse = await this.model.postMedicalAppointment({ medicalAppointment: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (apiPostNewMedicalAppointmentResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -94,15 +85,12 @@ export class HealthMedicalAppointmentController {
         }
     }
     putMedicalAppointment = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error
-        const result = await validateMedicalAppointment(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putMedicalAppointmentModelResponse = await this.model.putMedicalAppointment({ id, medicalAppointment: result.data, userId });
+            const putMedicalAppointmentModelResponse = await this.model.putMedicalAppointment({ id, medicalAppointment: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putMedicalAppointmentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -112,15 +100,12 @@ export class HealthMedicalAppointmentController {
         }
     }
     patchMedicalAppointment = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error
-        const result = await validatePartialMedicalAppointment(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos los valores de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const patchMedicalAppointmentModelResponse = await this.model.patchMedicalAppointment({ id, medicalAppointment: result.data, userId });
+            const patchMedicalAppointmentModelResponse = await this.model.patchMedicalAppointment({ id, medicalAppointment: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchMedicalAppointmentModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchMedicalAppointmentModelResponse);

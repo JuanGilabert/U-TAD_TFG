@@ -1,11 +1,9 @@
-// Importamos los modelos/schemas para validar los datos de las peticiones
-import { validateWork, validatePartialWork } from '../../models/work/workModelValidator.mjs';
 // Importamos los mensajes genericos.
 import {
     OKEY_200_MESSAGE, CREATED_201_MESSAGE,
     NOT_FOUND_404_MESSAGE, NOT_FOUND_404_QUERY_MESSAGE,
     INTERNAL_SERVER_ERROR_500_MESSAGE
-} from '../../utils/export/GenericEnvConfig.mjs';
+} from '../../config/GenericEnvConfig.mjs';
 export class WorkController {
     constructor({ model }) { 
         this.model = model
@@ -69,13 +67,11 @@ export class WorkController {
         }
     }
     postWork = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateWork(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
-        // Obtenemos del modelo los datos requeridos. Enviamos la respuesta obtenida.
+        // Obtenemos los valores de la peticion.
         const { userId } = req.user;
+        // Obtenemos del modelo los datos requeridos.
         try {
-            const postWorkModelResponse = await this.model.postWork({ work: result.data, userId });
+            const postWorkModelResponse = await this.model.postWork({ work: req.body, userId });
             // Enviamos la respuesta obtenida.
             if (postWorkModelResponse) return res.status(201).json({ message: CREATED_201_MESSAGE });
             // Enviamos el error obtenido.
@@ -86,15 +82,12 @@ export class WorkController {
         }
     }
     putWork = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validateWork(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos el id del recurso de la peticion.
         const { id } = req.params;
         const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const putWorkModelResponse = await this.model.putWork({ id, work: result.data, userId });
+            const putWorkModelResponse = await this.model.putWork({ id, work: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return putWorkModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json({ message: OKEY_200_MESSAGE });
@@ -104,15 +97,12 @@ export class WorkController {
         }
     }
     patchWork = async (req, res) => {
-        // Validaciones del objeto a insertar. Si no hay body valido devolvemos un error.
-        const result = await validatePartialWork(req.body);
-        if (result.error) return res.status(422).json({ message: result.error.message });
         // Obtenemos el id del recurso de la peticion.
         const { id } = req.params;
+        const { userId } = req.user;
         // Obtenemos del modelo los datos requeridos.
         try {
-            const { userId } = req.user;
-            const patchWorkModelResponse = await this.model.patchWork({ id, work: result.data, userId });
+            const patchWorkModelResponse = await this.model.patchWork({ id, work: req.body, userId });
             // Enviamos el error o la respuesta obtenida.
             return patchWorkModelResponse === false ? res.status(404).json({ message: NOT_FOUND_404_MESSAGE })
             : res.status(200).json(patchWorkModelResponse);

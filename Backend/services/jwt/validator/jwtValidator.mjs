@@ -5,7 +5,7 @@ import { promisify } from 'util';
 /* const verifyAsync = promisify(verify); Usar promisify en versiones de jsonwebtoken < 9
 ya que verify no es nativamente promisificado(no devuelve una promesa). */
 // Modulos locales
-import { JWT_SECRET_KEY } from '../../../utils/export/GenericEnvConfig.mjs';
+import { JWT_SECRET_KEY } from '../../../config/GenericEnvConfig.mjs';
 ////
 export const jwtValidator = (token) => {
     try {
